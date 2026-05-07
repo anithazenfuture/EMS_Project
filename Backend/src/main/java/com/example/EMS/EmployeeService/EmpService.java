@@ -241,7 +241,7 @@ public class EmpService {
 		
 		Optional<Employee> emp = empRepo.findByEmployeeId(id);
 		if(emp.isPresent()) {
-			return ResponseEntity.status(HttpStatus.FOUND).body(emp);
+			return ResponseEntity.status(HttpStatus.OK).body(emp);
 		}
 		
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee with id: "+id+" not found");
@@ -253,7 +253,7 @@ public class EmpService {
 		Optional<Employee> emp = empRepo.findByEmployeeId(id);
 		if(emp.isPresent()) {
 			empRepo.deleteByEmployeeId(id);
-			return ResponseEntity.status(HttpStatus.FOUND).body("Employee deleted with id: "+id);
+			return ResponseEntity.status(HttpStatus.OK).body("Employee deleted with id: "+id);
 		}
 		
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee with id: "+id+" not found");
