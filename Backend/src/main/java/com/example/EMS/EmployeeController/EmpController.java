@@ -80,9 +80,9 @@ public class EmpController {
 	        @RequestPart(value = "file", required = false) MultipartFile image,
 	        @RequestPart(value = "resume", required = false) MultipartFile resume,
 	        @RequestPart(value = "offerLetter", required = false) MultipartFile offerLetter,
-	        @RequestPart(value = "passbookPdf", required = false) MultipartFile passbookPdf,
-	        @RequestPart(value = "educationPdf", required = false) MultipartFile educationPdf,
-	        @RequestPart(value = "expLetter", required = false) List<MultipartFile> expLetter
+	        @RequestPart(value = "passbook", required = false) MultipartFile passbookPdf,
+	        @RequestPart(value = "education", required = false) MultipartFile educationPdf,
+	        @RequestPart(value = "experienceLetter", required = false) List<MultipartFile> expLetter
 	) throws Exception {
 
 	    return empService.updateEmployeeAll(empId, emp, image, resume,
