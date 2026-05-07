@@ -77,16 +77,16 @@ public class EmpController {
 	public ResponseEntity<?> updateEmployee(
 	        @PathVariable String empId,
 	        @RequestPart(value="employee", required=false) Employee emp,
-	        @RequestPart(value = "file", required = false) MultipartFile image,
+	        @RequestPart(value = "file", required = false) MultipartFile file,
 	        @RequestPart(value = "resume", required = false) MultipartFile resume,
 	        @RequestPart(value = "offerLetter", required = false) MultipartFile offerLetter,
-	        @RequestPart(value = "passbook", required = false) MultipartFile passbookPdf,
-	        @RequestPart(value = "education", required = false) MultipartFile educationPdf,
-	        @RequestPart(value = "experienceLetter", required = false) List<MultipartFile> expLetter
+	        @RequestPart(value = "passbook", required = false) MultipartFile passbook,
+	        @RequestPart(value = "education", required = false) MultipartFile education,
+	        @RequestPart(value = "experienceLetter", required = false) List<MultipartFile> experienceLetter
 	) throws Exception {
 
-	    return empService.updateEmployeeAll(empId, emp, image, resume,
-	            offerLetter, passbookPdf, educationPdf, expLetter);
+	    return empService.updateEmployeeAll(empId, emp, file, resume,
+	            offerLetter, passbook, education, experienceLetter);
 	}
 	
 	
