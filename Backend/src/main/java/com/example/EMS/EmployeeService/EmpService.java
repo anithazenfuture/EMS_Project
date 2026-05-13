@@ -43,13 +43,13 @@ public class EmpService {
 	public ResponseEntity<?> createUser(@RequestBody Employee emp){
 		
 		if(emp.getEmail() == null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please enter employee mail id"); 
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Please enter employee mail id"); 
 		}
 		
 		Optional<Employee> emailuser = empRepo.findByEmail(emp.getEmail());
 		
 		if(emailuser.isPresent()) {
-			return ResponseEntity.status(409).body("User Already exists");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User Already exists");
 		}
 		
 		Employee employee = empRepo.save(emp);
@@ -66,22 +66,22 @@ public class EmpService {
 	
 	
 	public ResponseEntity<?> createEmpIMG(@RequestPart("employee") Employee emp, 
-			@RequestPart(value= "file", required=true) MultipartFile file,
-			@RequestPart(value= "passbook", required=true) MultipartFile passbook,
-			@RequestPart(value= "education", required= true) MultipartFile education,
-			@RequestPart(value="resume", required= true) MultipartFile resume,
-			@RequestPart(value="offerLetter", required= true) MultipartFile offerLetter,
-			@RequestPart(value="experienceLetter", required= true) List<MultipartFile> experienceLetter){
+			@RequestPart(value= "file", required=false) MultipartFile file,
+			@RequestPart(value= "passbook", required=false) MultipartFile passbook,
+			@RequestPart(value= "education", required= false) MultipartFile education,
+			@RequestPart(value="resume", required= false) MultipartFile resume,
+			@RequestPart(value="offerLetter", required= false) MultipartFile offerLetter,
+			@RequestPart(value="experienceLetter", required= false) List<MultipartFile> experienceLetter){
 		
 		Optional<Employee> empId = empRepo.findByEmployeeId(emp.getEmployeeId());
 		if(empId.isPresent()) {
-			return ResponseEntity.status(409).body("User Already exists with Employee Id: "+ empId.get().getEmployeeId());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User Already exists with Employee Id: "+ empId.get().getEmployeeId());
 		}
 		
 		Optional<Employee> emailuser = empRepo.findByEmail(emp.getEmail());
 		
 		if(emailuser.isPresent()) {
-			return ResponseEntity.status(409).body("User Already exists with Email: "+ emailuser.get().getEmail());
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User Already exists with Email: "+ emailuser.get().getEmail());
 		}
 		
 		Long maxId = empRepo.findMaxId();
@@ -225,13 +225,13 @@ public class EmpService {
 		 Optional<Employee> empOptional = empRepo.findByEmployeeId(empId);
 
 		 if (empOptional.isEmpty()) {
-		        return ResponseEntity.status(404).body("Employee not found with ID: " + empId);
+		        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee not found with ID: " + empId);
 		    }
 
 		  Employee emp = empOptional.get();
 
 		 if (emp.getEmpPayroll() == null) {
-		        return ResponseEntity.status(404).body("Payroll details not found for Employee ID: " + empId);
+		        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Payroll details not found for Employee ID: " + empId);
 		  }
 
 		    return ResponseEntity.ok(emp.getEmpPayroll());

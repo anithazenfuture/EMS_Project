@@ -3,7 +3,10 @@ package com.example.EMS.EmployeeEntity;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,6 +24,7 @@ public class Employee {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(unique = true)
 	private String employeeId;
 	private String first_name;
 	private String last_name;
@@ -36,7 +40,7 @@ public class Employee {
     private String pan_number;
     private String address;
     private String imgFile;
-     
+    
 	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL)
     private BankDetails bankDetails;
 	
@@ -54,6 +58,10 @@ public class Employee {
 	
 	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
 	private List<Experience> experience;
+	
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private List<Attendance> attendance;
 	
 	
 	public EmployeePayroll getEmpPayroll() {
@@ -192,11 +200,6 @@ public class Employee {
 	}
 
 
-	
-
-	
-
-
 	public String getMarital_status() {
 		return marital_status;
 	}
@@ -276,5 +279,13 @@ public class Employee {
 	public void setBankDetails(BankDetails bankDetails) {
 		this.bankDetails = bankDetails;
 	}
+	public List<Attendance> getAttendance() {
+		return attendance;
+	}
+	public void setAttendance(List<Attendance> attendance) {
+		this.attendance = attendance;
+	}
+	
+	
 	
 }
