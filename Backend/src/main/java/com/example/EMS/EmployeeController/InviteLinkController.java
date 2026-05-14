@@ -34,6 +34,13 @@ public class InviteLinkController {
 	        );
 	    }
 		
+		@GetMapping("/getDetails")
+		public ResponseEntity<?> getInviteDetails() {
+	        return inviteService.getInviteDetails();
+	    }
+
+		
+		
 		@GetMapping("/validate")
 		public ResponseEntity<?> validateToken(
 		        @RequestParam String token) {
