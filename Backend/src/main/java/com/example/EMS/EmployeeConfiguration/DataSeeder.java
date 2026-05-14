@@ -1,6 +1,8 @@
 package com.example.EMS.EmployeeConfiguration;
 
 
+import java.util.HashSet;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.example.EMS.EmployeeEntity.User;
 import com.example.EMS.EmployeeRepository.UserRepository;
+import com.example.EMS.enums.Role;
 
 
 
@@ -35,7 +38,9 @@ public class DataSeeder {
                 user.setName("Admin");
                 user.setEmail("admin@gmail.com");
                 user.setPassword(passwordEncoder.encode("admin123")); 
-                user.setUserRole("ADMIN");
+                HashSet<Role> roles = new HashSet<>();
+                roles.add(Role.ADMIN);
+                user.setRoles(roles);
 
                 userRepository.save(user);
 

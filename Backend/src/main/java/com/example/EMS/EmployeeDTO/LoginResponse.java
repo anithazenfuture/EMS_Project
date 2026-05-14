@@ -1,24 +1,28 @@
 package com.example.EMS.EmployeeDTO;
 
+import java.util.Set;
+
+import com.example.EMS.enums.Role;
+
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
 
 @Data
 public class LoginResponse {
     private String email;
     private String name;
     private String token;
-    private String userRole;
+    private Set<Role> role;
     
     
-    public String getUserRole() {
-    	return userRole;
-    }
-    public void setUserRole(String userRole) {
-    	this.userRole = userRole;
-    }
-    public String getToken() {
+    
+    public Set<Role> getRole() {
+		return role;
+	}
+	public void setRole(Set<Role> role) {
+		this.role = role;
+	}
+	public String getToken() {
 		return token;
 	}
 	public void setToken(String token) {

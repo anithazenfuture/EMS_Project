@@ -1,6 +1,14 @@
 package com.example.EMS.EmployeeEntity;
 
+import java.util.Set;
+
+import com.example.EMS.enums.Role;
+
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,10 +26,11 @@ public class User {
 	private String name;
 	private String email;
 	private String password;
-	private String userRole;
 	
+	@Enumerated(EnumType.STRING)
+	@ElementCollection(fetch= FetchType.EAGER)
+	private Set<Role> roles;
 	
-
 
 	public Long getUserId() {
 		return userId;
@@ -47,12 +56,14 @@ public class User {
 	public void setPassword(String password) {
 		this.password = password;
 	}
-	public String getUserRole() {
-		return userRole;
+	public Set<Role> getRoles() {
+		return roles;
 	}
-	public void setUserRole(String userRole) {
-		this.userRole = userRole;
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
 	}
+	
+	
 	
 
 }

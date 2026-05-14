@@ -29,27 +29,40 @@ public class Loginservice {
 	}
 	
 	
-	public ResponseEntity<?> empLoginService(@RequestBody LoginRequest login) {
+	public ResponseEntity<?> empLoginService(
+	        @RequestBody LoginRequest login) {
 
-	    Optional<User> user = userRepository.findByEmail(login.getEmail());
+	    Optional<User> user =
+	            userRepository.findByEmail(login.getEmail());
 
 	    if (user.isEmpty()) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not found");
+
+	        return ResponseEntity
+	                .status(HttpStatus.UNAUTHORIZED)
+	                .body("User not found");
 	    }
 
 	    User existingUser = user.get();
 
-	    if (!passwordEncoder.matches(login.getPassword(), existingUser.getPassword())) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid password");
+	    if (!passwordEncoder.matches(
+	            login.getPassword(),
+	            existingUser.getPassword())) {
+
+	        return ResponseEntity
+	                .status(HttpStatus.UNAUTHORIZED)
+	                .body("Invalid password");
 	    }
 
 	    String token = jwt.generateToken(existingUser.getEmail());
 
 	    LoginResponse response = new LoginResponse();
+
 	    response.setToken(token);
 	    response.setName(existingUser.getName());
 	    response.setEmail(existingUser.getEmail());
-	    response.setUserRole(existingUser.getUserRole()); 
+
+	    
+	    response.setRole(existingUser.getRoles());
 
 	    return ResponseEntity.ok(response);
 	}

@@ -111,7 +111,7 @@ public class InviteLinkService {
 	
 	    @Scheduled(cron = "0 0 * * * *")
 	    public void removeExpiredInvites() {
-
+	    	System.out.println("Scheduler triggered at: " + LocalDateTime.now());
 	        repository.deleteByExpiryTimeBefore(
 	                LocalDateTime.now());
 
