@@ -56,7 +56,7 @@ public class EmployeeInviteService {
 		
 		
 		if(empInvite.getEmail()== null) {
-			ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please enter email address...");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please enter email address...");
 		}
 		
 		Optional<EmployeeInvite> existingUser =
@@ -66,7 +66,7 @@ public class EmployeeInviteService {
 
 
 		if(existingUser.isPresent()) {
-			ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already submitted response");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already submitted response");
 		    
 
 		} else {
