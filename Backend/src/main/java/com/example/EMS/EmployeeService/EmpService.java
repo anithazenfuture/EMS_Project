@@ -24,18 +24,21 @@ import com.example.EMS.EmployeeEntity.EmployeePayroll;
 import com.example.EMS.EmployeeEntity.Experience;
 import com.example.EMS.EmployeeEntity.ProfessionalDetails;
 import com.example.EMS.EmployeeRepository.EmpRepository;
+import com.example.EMS.EmployeeRepository.ProfessionalDetailRepository;
 
 @Service
 public class EmpService {
 	
 	public EmpRepository empRepo;
 	public PasswordEncoder passwordEncoder;
+	public ProfessionalDetailRepository professionalRepo;
 	
 	
 	
-	public EmpService(EmpRepository empRepo, PasswordEncoder passwordEncoder) {
+	public EmpService(EmpRepository empRepo, PasswordEncoder passwordEncoder, ProfessionalDetailRepository professionalRepo) {
 		this.empRepo = empRepo;
 		this.passwordEncoder = passwordEncoder;
+		this.professionalRepo = professionalRepo;
 	}
 
 
@@ -85,9 +88,10 @@ public class EmpService {
 		}
 		
 		Long maxId = empRepo.findMaxId();
+		String detail =  emp.getProfessional_details().getEmp_type();
+		String type = detail.substring(0, 1).toUpperCase(); 
 		long nextId = (maxId == null) ? 1 : maxId + 1;
-
-	    emp.setEmployeeId(String.format("ZF%03d", nextId));
+		emp.setEmployeeId(String.format("ZF%s-%03d", type, nextId));
 		
 		
 		if(file != null && !file.isEmpty()) {
