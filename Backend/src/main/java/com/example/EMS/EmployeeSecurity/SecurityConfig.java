@@ -47,7 +47,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/employee/**").hasAnyRole("ADMIN","HR","MANAGER")
                 .requestMatchers("/api/employeeInvite/**").hasAnyRole("ADMIN","HR")
                 .requestMatchers("/api/invite/**").hasAnyRole("ADMIN","HR")
-                .requestMatchers("/uploads/**", "/uploadsPdf/**").permitAll()
+                .requestMatchers("/uploads/**", "/uploadsPdf/**", "/onBoardingProfiles/**", "/onBoardingProfilesPdf/**").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

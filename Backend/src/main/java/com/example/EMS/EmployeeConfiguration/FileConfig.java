@@ -17,5 +17,11 @@ public class FileConfig implements WebMvcConfigurer {
         // For PDFs
         registry.addResourceHandler("/uploadsPdf/**")
                 .addResourceLocations("file:uploadsPdf/");
+        
+        registry.addResourceHandler("/onBoardingProfiles/**")
+        .addResourceLocations("file:onBoardingProfiles/");
+        
+        registry.addResourceHandler("/onBoardingProfilesPdf/**")
+        .addResourceLocations("file:onBoardingProfilesPdf/");
     }
 }
