@@ -9,14 +9,12 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.EMS.EmployeeEntity.BankDetails;
 import com.example.EMS.EmployeeEntity.Education;
 import com.example.EMS.EmployeeEntity.EmergencyContact;
-import com.example.EMS.EmployeeEntity.Employee;
 import com.example.EMS.EmployeeEntity.EmployeeInvite;
 import com.example.EMS.EmployeeEntity.EmployeePayroll;
 import com.example.EMS.EmployeeEntity.Experience;
@@ -337,34 +335,34 @@ public class EmployeeInviteService {
 
 
 		    if (file != null && !file.isEmpty()) {
-		        String fileName = saveFile(file, "uploads");
+		        String fileName = saveFile(file, "onBoardingProfiles");
 		        existing.setImgFile(fileName);
 		    }
 
 		    if (resume != null && !resume.isEmpty()) {
-		        String fileName = saveFile(resume, "uploadsPdf");
+		        String fileName = saveFile(resume, "onBoardingProfilesPdf");
 		        existing.getProfessional_details().setResume(fileName);
 		    }
 
 		    if (offerLetter != null && !offerLetter.isEmpty()) {
-		        String fileName = saveFile(offerLetter, "uploadsPdf");
+		        String fileName = saveFile(offerLetter, "onBoardingProfilesPdf");
 		        existing.getProfessional_details().setOffer_letter(fileName);
 		    }
 
 		    if (passbook != null && !passbook.isEmpty()) {
-		        String fileName = saveFile(passbook, "uploadsPdf");
+		        String fileName = saveFile(passbook, "onBoardingProfilesPdf");
 		        existing.getBankDetails().setPassbook_pdf(fileName);
 		    }
 
 		    if (education != null && !education.isEmpty()) {
-		        String fileName = saveFile(education, "uploadsPdf");
+		        String fileName = saveFile(education, "onBoardingProfilesPdf");
 		        existing.getEducation().setEducation_pdf(fileName);
 		    }
 
 		    if (experienceLetter != null && !experienceLetter.isEmpty()) {
 		        for (int i = 0; i < experienceLetter.size(); i++) {
 		            MultipartFile file1 = experienceLetter.get(i);
-		            String fileName = saveFile(file1, "uploadsPdf");
+		            String fileName = saveFile(file1, "onBoardingProfilesPdf");
 
 		            if (existing.getExperience().size() > i) {
 		                existing.getExperience().get(i).setExp_letter(fileName);
