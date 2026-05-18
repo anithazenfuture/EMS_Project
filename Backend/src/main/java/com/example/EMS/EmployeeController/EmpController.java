@@ -35,6 +35,18 @@ public class EmpController {
 		
 	}
 	
+	@PostMapping("/uploadExcel")
+	public ResponseEntity<?> createUserXL(@RequestPart MultipartFile xlFile, 
+			@RequestPart(value= "file", required=false) MultipartFile file,
+			@RequestPart(value= "passbook",required=false) MultipartFile passbook,
+			@RequestPart(value= "education",required=false) MultipartFile education,
+			@RequestPart(value="resume",required=false) MultipartFile resume,
+			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
+			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter){
+		return empService.createUserXL(xlFile,file,passbook,education,resume,offerLetter,experienceLetter);
+		
+	}
+	
 	@PostMapping("/registerEmp")
 	public ResponseEntity<?> createUserImg(@RequestPart("employee") Employee emp, 
 			@RequestPart(value= "file", required=false) MultipartFile file,
