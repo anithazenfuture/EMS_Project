@@ -66,7 +66,7 @@ public class EmpService {
                     .body("User Already exists");
         }
         Employee employee = empRepo.save(emp);
-        return ResponseEntity.ok(employee);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(employee);
     }
 
     // ══════════════════════════════════════════════════════════════════

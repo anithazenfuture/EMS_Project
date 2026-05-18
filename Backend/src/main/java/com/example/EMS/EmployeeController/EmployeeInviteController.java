@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -56,13 +57,13 @@ public class EmployeeInviteController {
 	}
 	
 	@PostMapping("/convertList")
-	public ResponseEntity<?> convertDataList(List<EmployeeInvite> list){
-		return empInviteService.convert(list);
+	public ResponseEntity<?> convertDataList(@RequestBody List<Long> empId){
+		return empInviteService.convert(empId);
 	}
 	
-	@PostMapping("/convert")
-	public ResponseEntity<?> convertData(EmployeeInvite list){
-		return empInviteService.convertByOne(list);
+	@PostMapping("/convert/{id}")
+	public ResponseEntity<?> convertData(@PathVariable Long id){
+		return empInviteService.convertByOne(id);
 	}
 	
 	
