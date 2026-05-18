@@ -55,10 +55,11 @@ public class EmployeeInviteController {
 		return empInviteService.deleteFormById(id);
 	}
 	
-	@PostMapping("/convert")
-	public ResponseEntity<?> convertData(){
-		return empInviteService.convert();
+	@PostMapping("/convertList")
+	public ResponseEntity<?> convertData(List<EmployeeInvite> list){
+		return empInviteService.convert(list);
 	}
+	
 	
 	
 	@PatchMapping("/updateForm/{id}")

@@ -384,8 +384,8 @@ public class EmployeeInviteService {
 		    return ResponseEntity.ok(existing);
 	}
 	
-	public ResponseEntity<?> convert(){
-		List<EmployeeInvite> lst =  empInviteRepo.findAll();
+	
+	public ResponseEntity<?> convert(List<EmployeeInvite> lst){
 		List<Employee> res = new ArrayList<>();
 		if(lst.size() == 0) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invite details not found");
