@@ -56,10 +56,14 @@ public class EmployeeInviteController {
 	}
 	
 	@PostMapping("/convertList")
-	public ResponseEntity<?> convertData(List<EmployeeInvite> list){
+	public ResponseEntity<?> convertDataList(List<EmployeeInvite> list){
 		return empInviteService.convert(list);
 	}
 	
+	@PostMapping("/convert")
+	public ResponseEntity<?> convertData(EmployeeInvite list){
+		return empInviteService.convertByOne(list);
+	}
 	
 	
 	@PatchMapping("/updateForm/{id}")

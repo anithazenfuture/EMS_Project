@@ -612,4 +612,222 @@ public class EmployeeInviteService {
 	}
 	
 	
+	public ResponseEntity<?> convertByOne(EmployeeInvite obj){
+		
+		try {			
+				Employee emp = new Employee();
+				emp.setFirst_name(obj.getFirst_name());
+				emp.setLast_name(obj.getLast_name());
+				emp.setEmail(obj.getEmail());
+				emp.setPhone_number(obj.getPhone_number());
+				emp.setPhone_number(obj.getPhone_number());
+				emp.setDate_of_birth(obj.getDate_of_birth());
+				emp.setMarital_status(obj.getMarital_status());
+				emp.setGender(obj.getGender());
+				emp.setBlood_group(obj.getBlood_group());
+				emp.setState(obj.getState());
+				emp.setPincode(obj.getPincode());
+				emp.setAadhar_number(obj.getAadhar_number());
+				emp.setPan_number(obj.getPan_number());
+				emp.setAddress(obj.getAddress());
+				emp.setImgFile(obj.getImgFile());
+				
+				BankDetails bd = null;
+				if (obj.getBankDetails() != null) {
+
+				    bd = new BankDetails();
+
+				    bd.setBankName(obj.getBankDetails().getBankName());
+				    bd.setAccountHolderName(obj.getBankDetails().getAccountHolderName());
+				    bd.setAccountNumber(obj.getBankDetails().getAccountNumber());
+				    bd.setConfirmAccountNumber(obj.getBankDetails().getConfirmAccountNumber());
+				    bd.setBranchName(obj.getBankDetails().getBranchName());
+				    bd.setIfsc_Number(obj.getBankDetails().getIfsc_Number());
+				    bd.setPassbook_pdf(obj.getBankDetails().getPassbook_pdf());
+
+				    bd.setEmployee(emp);
+
+				    emp.setBankDetails(bd);
+				}
+				
+				
+				
+				EmployeePayroll payroll = null;
+
+				if (obj.getEmpPayroll() != null) {
+
+				    payroll = new EmployeePayroll();
+
+				    payroll.setBasicPay(obj.getEmpPayroll().getBasicPay());
+				    payroll.setHRA(obj.getEmpPayroll().getHRA());
+				    payroll.setSpecialAllowance(obj.getEmpPayroll().getSpecialAllowance());
+				    payroll.setLTA(obj.getEmpPayroll().getLTA());
+				    payroll.setPF(obj.getEmpPayroll().getPF());
+				    payroll.setMedicalAllowance(obj.getEmpPayroll().getMedicalAllowance());
+				    payroll.setBonus(obj.getEmpPayroll().getBonus());
+				    payroll.setAnnualCTC(obj.getEmpPayroll().getAnnualCTC());
+
+				    payroll.setEmployee(emp);
+
+				    emp.setEmpPayroll(payroll);
+				}
+				
+				
+				EmergencyContact ec = null;
+
+				if (obj.getEmergency_contact() != null) {
+
+				    ec = new EmergencyContact();
+
+				    ec.setName(obj.getEmergency_contact().getName());
+				    ec.setRelation(obj.getEmergency_contact().getRelation());
+				    ec.setPhone(obj.getEmergency_contact().getPhone());
+
+				    ec.setEmployee(emp);
+
+				    emp.setEmergency_contact(ec);
+				}
+				
+				Education edu = null;
+
+				if (obj.getEducation() != null) {
+
+				    edu = new Education();
+
+				    edu.setEducationLevel(obj.getEducation().getEducationLevel());
+				    edu.setEducationalBoard(obj.getEducation().getEducationalBoard());
+				    edu.setSchoolName(obj.getEducation().getSchoolName());
+				    edu.setPlace(obj.getEducation().getPlace());
+				    edu.setEducationalGroup(obj.getEducation().getEducationalGroup());
+				    edu.setSchool_from(obj.getEducation().getSchool_from());
+				    edu.setSchool_to(obj.getEducation().getSchool_to());
+				    edu.setSchool_percentage(obj.getEducation().getSchool_percentage());
+				    edu.setEducation_pdf(obj.getEducation().getEducation_pdf());
+
+				    edu.setEmployee(emp);
+
+				    // Higher Education
+				    List<HigherEducation> higherList = new ArrayList<>();
+
+				    if (obj.getEducation().getHigherEducation() != null) {
+
+				        for (HigherEducation oldHe : obj.getEducation().getHigherEducation()) {
+
+				            HigherEducation he = new HigherEducation();
+
+				            he.setDegree(oldHe.getDegree());
+				            he.setInstituition(oldHe.getInstituition());
+				            he.setSpecialization(oldHe.getSpecialization());
+				            he.setDegree_from(oldHe.getDegree_from());
+				            he.setDegree_to(oldHe.getDegree_to());
+				            he.setPercentage(oldHe.getPercentage());
+				            he.setCertification(oldHe.getCertification());
+				            he.setCourseType(oldHe.getCourseType());
+				            higherList.add(he);
+				        }
+				    }
+
+				    edu.setHigherEducation(higherList);
+
+				    emp.setEducation(edu);
+				}
+				
+				ProfessionalDetails pd = null;
+
+				if (obj.getProfessional_details() != null) {
+
+				    pd = new ProfessionalDetails();
+
+				    pd.setProfessional_designation(
+				        obj.getProfessional_details().getProfessional_designation());
+
+				    pd.setProfessional_department(
+				        obj.getProfessional_details().getProfessional_department());
+
+				    pd.setEmp_type(
+				        obj.getProfessional_details().getEmp_type());
+
+				    pd.setLocation(
+				        obj.getProfessional_details().getLocation());
+
+				    pd.setEmp_status(
+				        obj.getProfessional_details().getEmp_status());
+
+				    pd.setDoj(
+				        obj.getProfessional_details().getDoj());
+
+				    pd.setProbation_period(
+				        obj.getProfessional_details().getProbation_period());
+
+				    pd.setConfirmation_date(
+				        obj.getProfessional_details().getConfirmation_date());
+
+				    pd.setSkills(
+				        obj.getProfessional_details().getSkills());
+
+				    pd.setExp_level(
+				        obj.getProfessional_details().getExp_level());
+
+				    pd.setResume(
+				        obj.getProfessional_details().getResume());
+
+				    pd.setOffer_letter(
+				        obj.getProfessional_details().getOffer_letter());
+
+				    pd.setEmployee(emp);
+
+				    emp.setProfessional_details(pd);
+				}
+				
+				List<Experience> expList = new ArrayList<>();
+
+				if (obj.getExperience() != null) {
+
+				    for (Experience oldExp : obj.getExperience()) {
+
+				        Experience exp = new Experience();
+
+				        exp.setCompany_name(oldExp.getCompany_name());
+				        exp.setJob_title(oldExp.getJob_title());
+				        exp.setEmp_type_prev(oldExp.getEmp_type_prev());
+				        exp.setEmp_start(oldExp.getEmp_start());
+				        exp.setEmp_end(oldExp.getEmp_end());
+				        exp.setCurrently_working(oldExp.getCurrently_working());
+				        exp.setDuration(oldExp.getDuration());
+				        exp.setTech_used(oldExp.getTech_used());
+				        exp.setRoles_responsibilities(
+				            oldExp.getRoles_responsibilities());
+
+				        exp.setExp_letter(oldExp.getExp_letter());
+
+				        exp.setEmployee(emp);
+
+				        expList.add(exp);
+				    }
+				}
+
+				emp.setExperience(expList);
+				
+				Long maxId = empRepo.findMaxId();
+				String detail =  emp.getProfessional_details().getEmp_type();
+				String type = detail.substring(0, 1).toUpperCase(); 
+				long nextId = (maxId == null) ? 1 : maxId + 1;
+				emp.setEmployeeId(String.format("ZF%s-%03d", type, nextId));
+			    
+				ResponseEntity<?> response = empService.createUser(emp);
+				empInviteRepo.deleteById(obj.getId());
+				
+				
+			
+		}
+		catch(Exception e) {
+			System.out.println("Exception: "+e);
+		}
+		
+		return ResponseEntity.ok(obj);
+		
+			
+	}
+	
+	
 }
