@@ -75,7 +75,8 @@ public class AttendanceController {
 	                attendanceService.registerService(
 	                        emp.get(),
 	                        request.getCheckIn(),
-	                        request.getCheckOut());
+	                        request.getCheckOut(),
+	                        request.getStatus());
 
 	        responseList.add(response.getBody().toString());
 	    }

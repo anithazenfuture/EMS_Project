@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,17 +36,7 @@ public class EmpController {
 		
 	}
 	
-	@PostMapping("/uploadExcel")
-	public ResponseEntity<?> createUserXL(@RequestPart MultipartFile xlFile, 
-			@RequestPart(value= "file", required=false) MultipartFile file,
-			@RequestPart(value= "passbook",required=false) MultipartFile passbook,
-			@RequestPart(value= "education",required=false) MultipartFile education,
-			@RequestPart(value="resume",required=false) MultipartFile resume,
-			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
-			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter){
-		return empService.createUserXL(xlFile,file,passbook,education,resume,offerLetter,experienceLetter);
-		
-	}
+	
 	
 	@PostMapping("/registerEmp")
 	public ResponseEntity<?> createUserImg(@RequestPart("employee") Employee emp, 
@@ -99,6 +90,30 @@ public class EmpController {
 
 	    return empService.updateEmployeeAll(empId, emp, file, resume,
 	            offerLetter, passbook, education, experienceLetter);
+	}
+	
+	@PostMapping("/uploadExcel")
+	public ResponseEntity<?> createUserXL(@RequestPart(value= "xlFile", required=false) MultipartFile xlFile, 
+			@RequestPart(value= "file", required=false) MultipartFile file,
+			@RequestPart(value= "passbook",required=false) MultipartFile passbook,
+			@RequestPart(value= "education",required=false) MultipartFile education,
+			@RequestPart(value="resume",required=false) MultipartFile resume,
+			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
+			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter){
+		return empService.createUserXL(xlFile,file,passbook,education,resume,offerLetter,experienceLetter);
+		
+	}
+	
+	@PatchMapping("/updateExcel")
+	public ResponseEntity<?> updateUserXL(@RequestPart(value= "xlFile", required=false) MultipartFile xlFile, 
+			@RequestPart(value= "file", required=false) MultipartFile file,
+			@RequestPart(value= "passbook",required=false) MultipartFile passbook,
+			@RequestPart(value= "education",required=false) MultipartFile education,
+			@RequestPart(value="resume",required=false) MultipartFile resume,
+			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
+			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter){
+		return empService.createUserXL(xlFile,file,passbook,education,resume,offerLetter,experienceLetter);
+		
 	}
 	
 	

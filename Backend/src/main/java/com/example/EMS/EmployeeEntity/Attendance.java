@@ -36,7 +36,7 @@ public class Attendance {
 	
 	
 	 @ManyToOne
-	 @JoinColumn(name = "employee_id", referencedColumnName="employeeId")
+	 @JoinColumn(name = "employee_id")
 	 @JsonBackReference
 	 private Employee employee;
 	
@@ -104,16 +104,7 @@ public class Attendance {
 	public void setAttendanceDate(LocalDate attendanceDate) {
 		this.attendanceDate = attendanceDate;
 	}
-	
-	
-	
-	
 
-	
-	
-	
-	
-	
 	
 	
 }

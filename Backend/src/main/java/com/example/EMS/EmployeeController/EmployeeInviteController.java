@@ -55,6 +55,12 @@ public class EmployeeInviteController {
 		return empInviteService.deleteFormById(id);
 	}
 	
+	@PostMapping("/convert")
+	public ResponseEntity<?> convertData(){
+		return empInviteService.convert();
+	}
+	
+	
 	@PatchMapping("/updateForm/{id}")
 	public ResponseEntity<?> updateFormById(@PathVariable Long id, @RequestPart("empInvite") EmployeeInvite empInvite, 
 			@RequestPart(value= "file", required=false) MultipartFile file,

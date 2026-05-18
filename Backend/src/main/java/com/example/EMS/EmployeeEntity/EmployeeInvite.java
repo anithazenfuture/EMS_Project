@@ -38,6 +38,7 @@ public class EmployeeInvite {
     private String pan_number;
     private String address;
     private String imgFile;
+    private String status="Pending";
     
     
 	@OneToOne(cascade= CascadeType.ALL)
@@ -228,6 +229,18 @@ public class EmployeeInvite {
 	public void setExperience(List<Experience> experience) {
 		this.experience = experience;
 	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	
+	
+	
 	
 	
 	

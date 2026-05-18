@@ -30,10 +30,8 @@ public class AttendanceService {
 
 
 
-	public ResponseEntity<?> registerService(Employee emp, LocalTime checkIn,LocalTime checkOut){
+	public ResponseEntity<?> registerService(Employee emp, LocalTime checkIn,LocalTime checkOut, String status){
         LocalDate today = LocalDate.now();
-
-  
         boolean alreadyExists =attendanceRepo.findByEmployee_EmployeeIdAndAttendanceDate(emp.getEmployeeId(),today).isPresent();
 
         if (alreadyExists) {
@@ -63,7 +61,7 @@ public class AttendanceService {
 
         attendance.setCheckOut(checkOut);
 
-        attendance.setStatus("Present");
+        attendance.setStatus(status);
 
        
         if (checkIn != null && checkOut != null) {
