@@ -396,7 +396,13 @@ public class EmpService {
             }
 
             workbook.close();
-            return ResponseEntity.ok("Excel uploaded successfully: "+lst);
+            if(lst.size() != 0) {
+            	return ResponseEntity.ok("Excel uploaded successfully: "+lst);
+            }
+            else {
+            	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No new records available to upload");
+            }
+            
 
         } catch (Exception e) {
             e.printStackTrace();
