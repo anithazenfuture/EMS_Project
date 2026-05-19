@@ -24,7 +24,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -244,6 +243,8 @@ public class EmpService {
 
             if (rows.hasNext()) rows.next(); 
             if (rows.hasNext()) rows.next(); 
+            
+            List<Employee> lst = new ArrayList<>();
 
             while (rows.hasNext()) {
                 Row row = rows.next();
@@ -390,11 +391,12 @@ public class EmpService {
                     emp.setExperience(List.of(exp));
                 }
 
-                empRepo.save(emp);
+                Employee res = empRepo.save(emp);
+                lst.add(res);
             }
 
             workbook.close();
-            return ResponseEntity.ok("Excel uploaded successfully");
+            return ResponseEntity.ok("Excel uploaded successfully: "+lst);
 
         } catch (Exception e) {
             e.printStackTrace();
