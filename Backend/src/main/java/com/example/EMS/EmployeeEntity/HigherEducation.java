@@ -22,6 +22,7 @@ public class HigherEducation {
 	private double percentage;
 	private String certification;
 	private String courseType;
+	private String higherEducation_pdf;
 	
 	@ManyToOne
 	@JoinColumn(name="education_id")
@@ -75,6 +76,25 @@ public class HigherEducation {
 	public void setCourseType(String courseType) {
 		this.courseType = courseType;
 	}
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getHigherEducation_pdf() {
+		return higherEducation_pdf;
+	}
+	public void setHigherEducation_pdf(String higherEducation_pdf) {
+		this.higherEducation_pdf = higherEducation_pdf;
+	}
+	public Education getEducation() {
+		return education;
+	}
+	public void setEducation(Education education) {
+		this.education = education;
+	}
+	
 	
 	
 

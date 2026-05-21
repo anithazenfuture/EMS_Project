@@ -33,6 +33,7 @@ import com.example.EMS.EmployeeEntity.EmergencyContact;
 import com.example.EMS.EmployeeEntity.Employee;
 import com.example.EMS.EmployeeEntity.EmployeePayroll;
 import com.example.EMS.EmployeeEntity.Experience;
+import com.example.EMS.EmployeeEntity.HigherEducation;
 import com.example.EMS.EmployeeEntity.ProfessionalDetails;
 import com.example.EMS.EmployeeRepository.EmpRepository;
 import com.example.EMS.EmployeeRepository.ProfessionalDetailRepository;
@@ -73,7 +74,14 @@ public class EmpService {
     // CREATE — single employee with multipart files
     // ══════════════════════════════════════════════════════════════════
 	public ResponseEntity<?> createEmpIMG(@RequestPart("employee") Employee emp, 
-			@RequestPart(value= "file", required=false) MultipartFile file,
+			@RequestPart(value= "file", required=false) MultipartFile file,			
+			
+			@RequestPart(value= "aadhar", required=false) MultipartFile aadhar,
+			@RequestPart(value= "pan_card", required=false) MultipartFile pan_card,
+			@RequestPart(value= "higerEducation", required=false) MultipartFile higherEducation,
+			@RequestPart(value= "bankStatement", required=false) List<MultipartFile> bankStatement,
+			@RequestPart(value= "salarySlip", required=false) List<MultipartFile> salarySlip,
+			
 			@RequestPart(value= "passbook", required=false) MultipartFile passbook,
 			@RequestPart(value= "education", required= false) MultipartFile education,
 			@RequestPart(value="resume", required= false) MultipartFile resume,
@@ -109,6 +117,30 @@ public class EmpService {
 			}
 		}
 		
+		if(aadhar != null && !aadhar.isEmpty()) {
+			try {
+				
+				String fileName = saveFile(aadhar, "uploadsPdf");
+				emp.setAadhar_pdf(fileName);
+	
+			}
+			catch(Exception e) {
+				return ResponseEntity.status(500).body("Aadhar Pdf upload failed "+e);
+			}
+		}
+		
+		if(pan_card != null && !pan_card.isEmpty()) {
+			try {
+				
+				String fileName = saveFile(pan_card, "uploadsPdf");
+				emp.setPan_pdf(fileName);
+	
+			}
+			catch(Exception e) {
+				return ResponseEntity.status(500).body("Pan Pdf upload failed "+e);
+			}
+		}
+		
 		if(passbook != null && !passbook.isEmpty()) {
 			try {
 				
@@ -117,8 +149,7 @@ public class EmpService {
 					emp.setBankDetails(new BankDetails());
 				}
 				
-				emp.getBankDetails().setPassbook_pdf(fileName);
-				
+				emp.getBankDetails().setPassbook_pdf(fileName);				
 				
 				
 			}
@@ -136,6 +167,19 @@ public class EmpService {
 				}
 				
 				emp.getEducation().setEducation_pdf(fileName);
+				
+				if(higherEducation != null && !higherEducation.isEmpty() ) {
+					if(emp.getEducation().getHigherEducation() == null) {
+						emp.getEducation().setHigherEducation(new ArrayList<HigherEducation>());
+					}
+					
+					for(int i=0;i<higherEducation.getSize();i++) {
+						HigherEducation hr = emp.getEducation().getHigherEducation().get(i);
+						String fileName1 = saveFile(higherEducation, "uploadsPdf");
+						hr.setHigherEducation_pdf(fileName1);
+					}
+				}
+				
 				
 			}
 			catch(Exception e) {
@@ -194,6 +238,70 @@ public class EmpService {
 
 		    } catch (Exception e) {
 		        return ResponseEntity.status(500).body("Experience upload failed "+e);
+		    }
+		}
+		
+		if (bankStatement != null && !bankStatement.isEmpty()) {
+		    try {
+
+		    	if (emp.getExperience() == null) {
+		            emp.setExperience(new ArrayList<>());
+		        }
+
+		        for (int i = 0; i < bankStatement.size(); i++) {
+
+		            MultipartFile files = bankStatement.get(i);
+
+		            String fileName = saveFile(files, "uploadsPdf");
+
+		            Experience exp;
+
+		            if (emp.getExperience().size() > i) {
+		                exp = emp.getExperience().get(i);
+		            } else {
+		                exp = new Experience();
+		                emp.getExperience().add(exp);
+		            }
+
+		            exp.setBankStatement_pdf(fileName);
+
+		         
+		        }
+
+		    } catch (Exception e) {
+		        return ResponseEntity.status(500)
+		                .body("Bank statement upload failed " + e);
+		    }
+		}
+		
+		if (salarySlip != null && !salarySlip.isEmpty()) {
+		    try {
+
+		        if (emp.getExperience() == null) {
+		            emp.setExperience(new ArrayList<>());
+		        }
+
+		        for (int i = 0; i < salarySlip.size(); i++) {
+
+		            MultipartFile files = salarySlip.get(i);
+
+		            String fileName = saveFile(files, "uploadsPdf");
+
+		            Experience exp;
+
+		            if (emp.getExperience().size() > i) {
+		                exp = emp.getExperience().get(i);
+		            } else {
+		                exp = new Experience();
+		                emp.getExperience().add(exp);
+		            }
+
+		            exp.setSalarySlip_pdf(fileName);
+		        }
+
+		    } catch (Exception e) {
+		        return ResponseEntity.status(500)
+		                .body("Salary slip upload failed " + e);
 		    }
 		}
 		

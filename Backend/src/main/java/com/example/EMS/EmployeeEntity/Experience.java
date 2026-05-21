@@ -28,6 +28,8 @@ public class Experience {
 	private String tech_used;
 	private String roles_responsibilities;
 	private String exp_letter;
+	private String bankStatement_pdf;
+	private String salarySlip_pdf;
 	
 	@ManyToOne
     @JoinColumn(name = "employee_id")
@@ -111,6 +113,19 @@ public class Experience {
 	public void setExp_letter(String exp_letter) {
 		this.exp_letter = exp_letter;
 	}
+	public String getBankStatement_pdf() {
+		return bankStatement_pdf;
+	}
+	public void setBankStatement_pdf(String bankStatement_pdf) {
+		this.bankStatement_pdf = bankStatement_pdf;
+	}
+	public String getSalarySlip_pdf() {
+		return salarySlip_pdf;
+	}
+	public void setSalarySlip_pdf(String salarySlip_pdf) {
+		this.salarySlip_pdf = salarySlip_pdf;
+	}
+	
 	
 	
 }

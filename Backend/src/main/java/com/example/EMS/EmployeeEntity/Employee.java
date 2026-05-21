@@ -39,11 +39,12 @@ public class Employee {
     private String blood_group;
     private String state;
     private String pincode;
-    private String aadhar_number;
-    private String pan_number;
+    private String aadhar_pdf;
+    private String pan_pdf;
     private String address;
     private String imgFile;
-    
+    private String aadhar_number;
+    private String pan_number;
     @Enumerated(EnumType.STRING)
     private Role role;
     
@@ -185,17 +186,6 @@ public class Employee {
 		this.blood_group = blood_group;
 	}
 
-
-	public String getAadhar_number() {
-		return aadhar_number;
-	}
-
-
-	public void setAadhar_number(String aadhar_number) {
-		this.aadhar_number = aadhar_number;
-	}
-
-
 	public String getAddress() {
 		return address;
 	}
@@ -277,16 +267,6 @@ public class Employee {
 	}
 
 
-	public String getPan_number() {
-		return pan_number;
-	}
-
-
-	public void setPan_number(String pan_number) {
-		this.pan_number = pan_number;
-	}
-
-
 	public BankDetails getBankDetails() {
 		return bankDetails;
 	}
@@ -319,6 +299,34 @@ public class Employee {
 	public void setLeaveBalance(List<LeaveBalance> leaveBalance) {
 		this.leaveBalance = leaveBalance;
 	}
+	public String getAadhar_pdf() {
+		return aadhar_pdf;
+	}
+	public void setAadhar_pdf(String aadhar_pdf) {
+		this.aadhar_pdf = aadhar_pdf;
+	}
+	public String getPan_pdf() {
+		return pan_pdf;
+	}
+	public void setPan_pdf(String pan_pdf) {
+		this.pan_pdf = pan_pdf;
+	}
+	public String getAadhar_number() {
+		return aadhar_number;
+	}
+	public void setAadhar_number(String aadhar_number) {
+		this.aadhar_number = aadhar_number;
+	}
+	public String getPan_number() {
+		return pan_number;
+	}
+	public void setPan_number(String pan_number) {
+		this.pan_number = pan_number;
+	}
+	
+	
+	
+	
 	
 	
 	
