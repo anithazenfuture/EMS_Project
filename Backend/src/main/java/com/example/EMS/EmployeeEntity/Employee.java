@@ -3,11 +3,14 @@ package com.example.EMS.EmployeeEntity;
 import java.util.Date;
 import java.util.List;
 
+import com.example.EMS.enums.Role;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,6 +44,9 @@ public class Employee {
     private String address;
     private String imgFile;
     
+    @Enumerated(EnumType.STRING)
+    private Role role;
+    
 	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL)
     private BankDetails bankDetails;
 	
@@ -62,6 +68,16 @@ public class Employee {
 	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private List<Attendance> attendance;
+	
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private List<LeaveRequest> leaveRequest;
+	
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private List<LeaveBalance> leaveBalance;
+	
+	
 	
 	
 	public EmployeePayroll getEmpPayroll() {
@@ -285,6 +301,25 @@ public class Employee {
 	public void setAttendance(List<Attendance> attendance) {
 		this.attendance = attendance;
 	}
+	public Role getRole() {
+		return role;
+	}
+	public void setRole(Role role) {
+		this.role = role;
+	}
+	public List<LeaveRequest> getLeaveRequest() {
+		return leaveRequest;
+	}
+	public void setLeaveRequest(List<LeaveRequest> leaveRequest) {
+		this.leaveRequest = leaveRequest;
+	}
+	public List<LeaveBalance> getLeaveBalance() {
+		return leaveBalance;
+	}
+	public void setLeaveBalance(List<LeaveBalance> leaveBalance) {
+		this.leaveBalance = leaveBalance;
+	}
+	
 	
 	
 	

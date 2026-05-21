@@ -36,6 +36,7 @@ import com.example.EMS.EmployeeEntity.Experience;
 import com.example.EMS.EmployeeEntity.ProfessionalDetails;
 import com.example.EMS.EmployeeRepository.EmpRepository;
 import com.example.EMS.EmployeeRepository.ProfessionalDetailRepository;
+import com.example.EMS.enums.Role;
 
 @Service
 public class EmpService {
@@ -225,7 +226,7 @@ public class EmpService {
 
 
     // ══════════════════════════════════════════════════════════════════
-    // CREATE — bulk upload via Excel
+    // CREATE — bulk upload via Excel  - Need to update for newly added fields
     // ══════════════════════════════════════════════════════════════════
     public ResponseEntity<?> createUserXL(
             MultipartFile xlFile,
@@ -283,112 +284,175 @@ public class EmpService {
                 emp.setAadhar_number(getCellValue(row.getCell(10)));
                 emp.setPan_number(getCellValue(row.getCell(11)));
                 emp.setAddress(getCellValue(row.getCell(12)));
+                
+                String roleValue = getCellValue(row.getCell(13));
+                if(roleValue != null) {
 
-                // ── 2. BANK DETAILS (cols 13–17) ──────────────────────
-                String bankName = getCellValue(row.getCell(13));
+                    switch(roleValue.trim().toUpperCase()) {
+
+                        case "ADMIN":
+                            emp.setRole(Role.ADMIN);
+                            break;
+
+                        case "HR":
+                            emp.setRole(Role.HR);
+                            break;
+
+                        case "MANAGER":
+                            emp.setRole(Role.MANAGER);
+                            break;
+
+                        case "EMPLOYEE":
+                            emp.setRole(Role.EMPLOYEE);
+                            break;
+
+                        default:
+                            emp.setRole(Role.EMPLOYEE); // default role
+                            break;
+                    }
+
+                } else {
+                    emp.setRole(Role.EMPLOYEE);
+                }
+
+             // ── 2. BANK DETAILS (cols 14–18) ───────────────────────
+                String bankName = getCellValue(row.getCell(14));
                 if (!bankName.isEmpty()) {
-                    BankDetails bank = new BankDetails();
-                    bank.setBankName(bankName);
-                    bank.setAccountHolderName(getCellValue(row.getCell(14)));
 
-                    Long accNo = parseLong(getCellValue(row.getCell(15)));
+                    BankDetails bank = new BankDetails();
+
+                    bank.setBankName(bankName);
+                    bank.setAccountHolderName(getCellValue(row.getCell(15)));
+
+                    Long accNo = parseLong(getCellValue(row.getCell(16)));
+
                     if (accNo != null) {
                         bank.setAccountNumber(accNo);
                         bank.setConfirmAccountNumber(accNo);
                     }
 
-                    bank.setBranchName(getCellValue(row.getCell(16)));
-                    bank.setIfsc_Number(getCellValue(row.getCell(17)));
+                    bank.setBranchName(getCellValue(row.getCell(17)));
+                    bank.setIfsc_Number(getCellValue(row.getCell(18)));
+
                     bank.setEmployee(emp);
                     emp.setBankDetails(bank);
                 }
 
-                // ── 3. PROFESSIONAL DETAILS (cols 18–27) ──────────────
-                String designation = getCellValue(row.getCell(18));
+                // ── 3. PROFESSIONAL DETAILS (cols 19–28) ──────────────
+                String designation = getCellValue(row.getCell(19));
+
                 if (!designation.isEmpty()) {
+
                     ProfessionalDetails pd = new ProfessionalDetails();
+
                     pd.setProfessional_designation(designation);
-                    pd.setProfessional_department(getCellValue(row.getCell(19)));
-                    pd.setEmp_type(getCellValue(row.getCell(20)));
-                    pd.setLocation(getCellValue(row.getCell(21)));
-                    pd.setEmp_status(getCellValue(row.getCell(22)));
-                    pd.setExp_level(getCellValue(row.getCell(23)));
-                    pd.setSkills(getCellValue(row.getCell(24)));
-                    pd.setDoj(parseDate(row.getCell(25)));
-                    pd.setProbation_period(getCellValue(row.getCell(26)));
-                    pd.setConfirmation_date(parseDate(row.getCell(27)));
+                    pd.setProfessional_department(getCellValue(row.getCell(20)));
+                    pd.setEmp_type(getCellValue(row.getCell(21)));
+                    pd.setLocation(getCellValue(row.getCell(22)));
+                    pd.setEmp_status(getCellValue(row.getCell(23)));
+                    pd.setExp_level(getCellValue(row.getCell(24)));
+                    pd.setSkills(getCellValue(row.getCell(25)));
+                    pd.setDoj(parseDate(row.getCell(26)));
+                    pd.setProbation_period(getCellValue(row.getCell(27)));
+                    pd.setConfirmation_date(parseDate(row.getCell(28)));
+
                     pd.setEmployee(emp);
                     emp.setProfessional_details(pd);
-                    
-                    
+
                     Long maxId = empRepo.findMaxId();
-            		String detail =  emp.getProfessional_details().getEmp_type();
-            		String type = detail.substring(0, 1).toUpperCase(); 
-            		long nextId = (maxId == null) ? 1 : maxId + 1;
-            		emp.setEmployeeId(String.format("ZF%s-%03d", type, nextId));
+
+                    String detail = emp.getProfessional_details().getEmp_type();
+
+                    String type = detail.substring(0, 1).toUpperCase();
+
+                    long nextId = (maxId == null) ? 1 : maxId + 1;
+
+                    emp.setEmployeeId(String.format("ZF%s-%03d", type, nextId));
                 }
 
-                // ── 4. PAYROLL (cols 28–35) ────────────────────────────
-                String basicPayStr = getCellValue(row.getCell(28));
+                // ── 4. PAYROLL (cols 29–36) ────────────────────────────
+                String basicPayStr = getCellValue(row.getCell(29));
+
                 if (!basicPayStr.isEmpty()) {
+
                     EmployeePayroll payroll = new EmployeePayroll();
-                    payroll.setBasicPay(parseDouble(getCellValue(row.getCell(28))));
-                    payroll.setHRA(parseDouble(getCellValue(row.getCell(29))));
-                    payroll.setSpecialAllowance(parseDouble(getCellValue(row.getCell(30))));
-                    payroll.setLTA(parseDouble(getCellValue(row.getCell(31))));
-                    payroll.setPF(parseDouble(getCellValue(row.getCell(32))));
-                    payroll.setMedicalAllowance(parseDouble(getCellValue(row.getCell(33))));
-                    payroll.setBonus(parseDouble(getCellValue(row.getCell(34))));
-                    payroll.setAnnualCTC(parseDouble(getCellValue(row.getCell(35))));
+
+                    payroll.setBasicPay(parseDouble(getCellValue(row.getCell(29))));
+                    payroll.setHRA(parseDouble(getCellValue(row.getCell(30))));
+                    payroll.setSpecialAllowance(parseDouble(getCellValue(row.getCell(31))));
+                    payroll.setLTA(parseDouble(getCellValue(row.getCell(32))));
+                    payroll.setPF(parseDouble(getCellValue(row.getCell(33))));
+                    payroll.setMedicalAllowance(parseDouble(getCellValue(row.getCell(34))));
+                    payroll.setBonus(parseDouble(getCellValue(row.getCell(35))));
+                    payroll.setAnnualCTC(parseDouble(getCellValue(row.getCell(36))));
+
                     payroll.setEmployee(emp);
+
                     emp.setEmpPayroll(payroll);
                 }
 
-                // ── 5. EMERGENCY CONTACT (cols 36–38) ─────────────────
-                String ecName = getCellValue(row.getCell(36));
-                if (!ecName.isEmpty()) {
-                    EmergencyContact ec = new EmergencyContact();
-                    ec.setName(ecName);
-                    ec.setRelation(getCellValue(row.getCell(37)));
+                // ── 5. EMERGENCY CONTACT (cols 37–39) ─────────────────
+                String ecName = getCellValue(row.getCell(37));
 
-                    Long ecPhone = parseLong(getCellValue(row.getCell(38)));
-                    if (ecPhone != null) ec.setPhone(ecPhone);
+                if (!ecName.isEmpty()) {
+
+                    EmergencyContact ec = new EmergencyContact();
+
+                    ec.setName(ecName);
+                    ec.setRelation(getCellValue(row.getCell(38)));
+
+                    Long ecPhone = parseLong(getCellValue(row.getCell(39)));
+
+                    if (ecPhone != null)
+                        ec.setPhone(ecPhone);
 
                     ec.setEmployee(emp);
+
                     emp.setEmergency_contact(ec);
                 }
 
-                // ── 6. EDUCATION (cols 39–46) ──────────────────────────
-                String eduLevel = getCellValue(row.getCell(39));
+                // ── 6. EDUCATION (cols 40–47) ──────────────────────────
+                String eduLevel = getCellValue(row.getCell(40));
+
                 if (!eduLevel.isEmpty()) {
+
                     Education edu = new Education();
+
                     edu.setEducationLevel(eduLevel);
-                    edu.setEducationalBoard(getCellValue(row.getCell(40)));
-                    edu.setSchoolName(getCellValue(row.getCell(41)));
-                    edu.setPlace(getCellValue(row.getCell(42)));
-                    edu.setEducationalGroup(getCellValue(row.getCell(43)));
-                    edu.setSchool_from(getCellValue(row.getCell(44)));
-                    edu.setSchool_to(getCellValue(row.getCell(45)));
-                    edu.setSchool_percentage(parseDouble(getCellValue(row.getCell(46))));
+                    edu.setEducationalBoard(getCellValue(row.getCell(41)));
+                    edu.setSchoolName(getCellValue(row.getCell(42)));
+                    edu.setPlace(getCellValue(row.getCell(43)));
+                    edu.setEducationalGroup(getCellValue(row.getCell(44)));
+                    edu.setSchool_from(getCellValue(row.getCell(45)));
+                    edu.setSchool_to(getCellValue(row.getCell(46)));
+                    edu.setSchool_percentage(parseDouble(getCellValue(row.getCell(47))));
+
                     edu.setEmployee(emp);
+
                     emp.setEducation(edu);
                 }
 
-                // ── 7. EXPERIENCE (cols 47–55) ─────────────────────────
-                String companyName = getCellValue(row.getCell(47));
+                // ── 7. EXPERIENCE (cols 48–56) ─────────────────────────
+                String companyName = getCellValue(row.getCell(48));
+
                 if (!companyName.isEmpty()) {
+
                     Experience exp = new Experience();
+
                     exp.setCompany_name(companyName);
-                    exp.setJob_title(getCellValue(row.getCell(48)));
-                    exp.setEmp_type_prev(getCellValue(row.getCell(49)));
-                    exp.setEmp_start(parseDate(row.getCell(50)));
-                    exp.setEmp_end(parseDate(row.getCell(51)));
-                    exp.setCurrently_working(getCellValue(row.getCell(52)));
-                    exp.setDuration(getCellValue(row.getCell(53)));
-                    exp.setTech_used(getCellValue(row.getCell(54)));
-                    exp.setRoles_responsibilities(getCellValue(row.getCell(55)));
+                    exp.setJob_title(getCellValue(row.getCell(49)));
+                    exp.setEmp_type_prev(getCellValue(row.getCell(50)));
+                    exp.setEmp_start(parseDate(row.getCell(51)));
+                    exp.setEmp_end(parseDate(row.getCell(52)));
+                    exp.setCurrently_working(getCellValue(row.getCell(53)));
+                    exp.setDuration(getCellValue(row.getCell(54)));
+                    exp.setTech_used(getCellValue(row.getCell(55)));
+                    exp.setRoles_responsibilities(getCellValue(row.getCell(56)));
+
                     exp.setEmployee(emp);
+
                     emp.setExperience(List.of(exp));
+                
                 }
 
                 Employee res = empRepo.save(emp);
@@ -573,7 +637,7 @@ public class EmpService {
 	 	    if (emp.getAadhar_number() != null) existing.setAadhar_number(emp.getAadhar_number());
 	 	    if (emp.getPan_number() != null) existing.setPan_number(emp.getPan_number());
 	 	    if (emp.getAddress() != null) existing.setAddress(emp.getAddress());
-	 	    
+	 	    if (emp.getRole() != null) existing.setRole(emp.getRole());
 
 	 	    if (emp.getBankDetails() != null) {
 	 	        BankDetails newBank = emp.getBankDetails();
@@ -673,6 +737,18 @@ public class EmpService {
 	 	    
 	 	    if (emp.getExperience() != null && !emp.getExperience().isEmpty()) {
 	 	        existing.setExperience(emp.getExperience());
+	 	    }
+	 	    
+	 	    if(emp.getAttendance() != null && !emp.getAttendance().isEmpty()) {
+	 	    	existing.setAttendance(emp.getAttendance());
+	 	    }
+	 	    
+	 	   if(emp.getLeaveBalance()!= null && !emp.getLeaveBalance().isEmpty()) {
+	 	    	existing.setLeaveBalance(emp.getLeaveBalance());
+	 	    }
+	 	   
+	 	  if(emp.getLeaveRequest()!= null && !emp.getLeaveRequest().isEmpty()) {
+	 	    	existing.setLeaveRequest(existing.getLeaveRequest());
 	 	    }
 		    
 	    	
