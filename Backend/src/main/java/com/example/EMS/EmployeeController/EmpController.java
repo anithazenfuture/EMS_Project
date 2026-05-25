@@ -92,7 +92,7 @@ public class EmpController {
 	        @RequestPart(value = "file", required = false) MultipartFile file,
 	        @RequestPart(value = "aadhar", required = false) MultipartFile aadhar,
 	        @RequestPart(value = "pan_card", required = false) MultipartFile pan_card,
-	        @RequestPart(value = "higherEducation", required = false) MultipartFile higherEducation,
+	        @RequestPart(value = "higherEducation", required = false) List<MultipartFile> higherEducation,
 	        @RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
 	        @RequestPart(value = "bankStatement", required = false)
 	        List<MultipartFile> bankStatement,

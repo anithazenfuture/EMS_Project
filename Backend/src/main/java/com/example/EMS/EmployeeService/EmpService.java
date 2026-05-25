@@ -1020,7 +1020,7 @@ public class EmpService {
 
             MultipartFile aadhar,
             MultipartFile panCard,
-            MultipartFile higherEducation,
+            List<MultipartFile> higherEducation,
             List<MultipartFile> prevExpLetter,
             List<MultipartFile> bankStatement,
             List<MultipartFile> salarySlip,
@@ -1470,19 +1470,30 @@ public class EmpService {
             existing.getEducation().setEducation_pdf(fileName);
         }
 
-        // ================= HIGHER EDUCATION PDF =================
+     // ================= HIGHER EDUCATION PDF =================
 
         if (higherEducation != null && !higherEducation.isEmpty()) {
 
             if (existing.getEducation() != null
                     && existing.getEducation().getHigherEducation() != null) {
 
-                for (HigherEducation hr :
-                        existing.getEducation().getHigherEducation()) {
+                List<HigherEducation> higherEduList =
+                        existing.getEducation().getHigherEducation();
 
-                    String fileName = saveFile(higherEducation, "uploadsPdf");
+                for (int i = 0; i < higherEducation.size(); i++) {
 
-                    hr.setHigherEducation_pdf(fileName);
+                    MultipartFile file = higherEducation.get(i);
+
+                    String fileName = saveFile(file, "uploadsPdf");
+
+                    if (higherEduList.size() > i) {
+
+                        HigherEducation hr = higherEduList.get(i);
+
+                        hr.setHigherEducation_pdf(fileName);
+
+                        hr.setEducation(existing.getEducation());
+                    }
                 }
             }
         }
