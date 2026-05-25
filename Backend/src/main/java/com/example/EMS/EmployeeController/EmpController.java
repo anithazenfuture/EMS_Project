@@ -52,10 +52,11 @@ public class EmpController {
 			@RequestPart(value= "education",required=false) MultipartFile education,
 			@RequestPart(value="resume",required=false) MultipartFile resume,
 			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
+			@RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
 			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter){
 		
 		
-		return empService.createEmpIMG(emp, file,aadhar,pan_card, higherEducation,bankStatement, salarySlip, passbook, education, resume, offerLetter,experienceLetter);
+		return empService.createEmpIMG(emp, file,aadhar,pan_card, higherEducation,bankStatement, salarySlip, passbook, education, resume, offerLetter, prevExpLetter,experienceLetter);
 	}
 	
 	
@@ -121,28 +122,113 @@ public class EmpController {
 	    );
 	}
 	
-	@PostMapping("/uploadExcel")
-	public ResponseEntity<?> createUserXL(@RequestPart(value= "xlFile", required=false) MultipartFile xlFile, 
-			@RequestPart(value= "file", required=false) MultipartFile file,
-			@RequestPart(value= "passbook",required=false) MultipartFile passbook,
-			@RequestPart(value= "education",required=false) MultipartFile education,
-			@RequestPart(value="resume",required=false) MultipartFile resume,
-			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
-			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter){
-		return empService.createUserXL(xlFile,file,passbook,education,resume,offerLetter,experienceLetter);
-		
+	@PostMapping(value = "/uploadExcel", consumes = "multipart/form-data")
+	public ResponseEntity<?> createUserXL(
+
+	        @RequestPart(value = "xlFile") MultipartFile xlFile,
+
+	        @RequestPart(value = "file", required = false)
+	        List<MultipartFile> file,
+
+	        @RequestPart(value = "aadhar", required = false)
+	        List<MultipartFile> aadhar,
+
+	        @RequestPart(value = "pan_card", required = false)
+	        List<MultipartFile> pan_card,
+
+	        @RequestPart(value = "higherEducation", required = false)
+	        List<MultipartFile> higherEducation,
+
+	        @RequestPart(value = "bankStatement", required = false)
+	        List<MultipartFile> bankStatement,
+
+	        @RequestPart(value = "salarySlip", required = false)
+	        List<MultipartFile> salarySlip,
+
+	        @RequestPart(value = "passbook", required = false)
+	        List<MultipartFile> passbook,
+
+	        @RequestPart(value = "education", required = false)
+	        List<MultipartFile> education,
+
+	        @RequestPart(value = "resume", required = false)
+	        List<MultipartFile> resume,
+
+	        @RequestPart(value = "offerLetter", required = false)
+	        List<MultipartFile> offerLetter,
+
+	        @RequestPart(value = "experienceLetter", required = false)
+	        List<MultipartFile> experienceLetter) {
+
+	    return empService.createUserXL(
+	            xlFile,
+	            file,
+	            aadhar,
+	            pan_card,
+	            higherEducation,
+	            bankStatement,
+	            salarySlip,
+	            passbook,
+	            education,
+	            resume,
+	            offerLetter,
+	            experienceLetter);
 	}
 	
 	@PatchMapping("/updateExcel")
-	public ResponseEntity<?> updateUserXL(@RequestPart(value= "xlFile", required=false) MultipartFile xlFile, 
-			@RequestPart(value= "file", required=false) MultipartFile file,
-			@RequestPart(value= "passbook",required=false) MultipartFile passbook,
-			@RequestPart(value= "education",required=false) MultipartFile education,
-			@RequestPart(value="resume",required=false) MultipartFile resume,
-			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
-			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter){
-		return empService.createUserXL(xlFile,file,passbook,education,resume,offerLetter,experienceLetter);
-		
+	public ResponseEntity<?> updateUserXL(
+
+	        @RequestPart(value = "xlFile", required = false) MultipartFile xlFile,
+
+	        @RequestPart(value = "file", required = false)
+	        List<MultipartFile> file,
+
+	        @RequestPart(value = "aadhar", required = false)
+	        List<MultipartFile> aadhar,
+
+	        @RequestPart(value = "pan_card", required = false)
+	        List<MultipartFile> pan_card,
+
+	        @RequestPart(value = "passbook", required = false)
+	        List<MultipartFile> passbook,
+
+	        @RequestPart(value = "education", required = false)
+	        List<MultipartFile> education,
+
+	        @RequestPart(value = "higherEducation", required = false)
+	        List<MultipartFile> higherEducation,
+
+	        @RequestPart(value = "resume", required = false)
+	        List<MultipartFile> resume,
+
+	        @RequestPart(value = "offerLetter", required = false)
+	        List<MultipartFile> offerLetter,
+
+	        @RequestPart(value = "experienceLetter", required = false)
+	        List<MultipartFile> experienceLetter,
+
+	        @RequestPart(value = "bankStatement", required = false)
+	        List<MultipartFile> bankStatement,
+
+	        @RequestPart(value = "salarySlip", required = false)
+	        List<MultipartFile> salarySlip
+
+	) {
+
+	    return empService.updateUserXL(
+	            xlFile,
+	            file,
+	            aadhar,
+	            pan_card,
+	            passbook,
+	            education,
+	            higherEducation,
+	            resume,
+	            offerLetter,
+	            experienceLetter,
+	            bankStatement,
+	            salarySlip
+	    );
 	}
 	
 	
