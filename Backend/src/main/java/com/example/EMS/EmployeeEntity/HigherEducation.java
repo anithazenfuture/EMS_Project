@@ -1,6 +1,8 @@
 package com.example.EMS.EmployeeEntity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,6 +28,7 @@ public class HigherEducation {
 	
 	@ManyToOne
 	@JoinColumn(name="education_id")
+	@JsonIgnore
 	private Education education;
 	
 	public String getDegree() {

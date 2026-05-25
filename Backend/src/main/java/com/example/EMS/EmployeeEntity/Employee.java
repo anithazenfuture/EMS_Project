@@ -48,33 +48,34 @@ public class Employee {
     @Enumerated(EnumType.STRING)
     private Role role;
     
-	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL)
+	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL, orphanRemoval = true)
     private BankDetails bankDetails;
 	
-	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL)
+	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL, orphanRemoval = true)
 	private EmployeePayroll empPayroll;
 	
-	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL)
+	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL, orphanRemoval = true)
     private EmergencyContact emergency_contact;
 	
-	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL)
+	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL, orphanRemoval = true)
 	private Education education;
 	
-	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL)
+	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL, orphanRemoval = true)
 	private ProfessionalDetails professional_details;
 	
-	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL ,orphanRemoval = true)
 	private List<Experience> experience;
 	
-	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+	
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	private List<Attendance> attendance;
 	
-	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	private List<LeaveRequest> leaveRequest;
 	
-	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL)
+	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
 	private List<LeaveBalance> leaveBalance;
 	

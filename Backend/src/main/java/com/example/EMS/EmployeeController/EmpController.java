@@ -85,18 +85,40 @@ public class EmpController {
 	
 	@PutMapping(value = "/updateEmployee/{empId}", consumes = "multipart/form-data")
 	public ResponseEntity<?> updateEmployee(
+
 	        @PathVariable String empId,
-	        @RequestPart(value="employee", required=false) Employee emp,
+	        @RequestPart(value = "employee", required = false) Employee emp,
 	        @RequestPart(value = "file", required = false) MultipartFile file,
-	        @RequestPart(value = "resume", required = false) MultipartFile resume,
-	        @RequestPart(value = "offerLetter", required = false) MultipartFile offerLetter,
-	        @RequestPart(value = "passbook", required = false) MultipartFile passbook,
-	        @RequestPart(value = "education", required = false) MultipartFile education,
-	        @RequestPart(value = "experienceLetter", required = false) List<MultipartFile> experienceLetter
+	        @RequestPart(value = "aadhar", required = false) MultipartFile aadhar,
+	        @RequestPart(value = "pan_card", required = false) MultipartFile pan_card,
+	        @RequestPart(value = "higherEducation", required = false) MultipartFile higherEducation,
+	        
+	        @RequestPart(value = "bankStatement", required = false)
+	        List<MultipartFile> bankStatement,
+	        
+	        @RequestPart(value = "salarySlip", required = false)
+	        List<MultipartFile> salarySlip,
+
+	        @RequestPart(value = "passbook", required = false)
+	        MultipartFile passbook,
+
+	        @RequestPart(value = "education", required = false)
+	        MultipartFile education,
+
+	        @RequestPart(value = "resume", required = false)
+	        MultipartFile resume,
+
+	        @RequestPart(value = "offerLetter", required = false)
+	        MultipartFile offerLetter,
+
+	        @RequestPart(value = "experienceLetter", required = false)
+	        List<MultipartFile> experienceLetter
+
 	) throws Exception {
 
-	    return empService.updateEmployeeAll(empId, emp, file, resume,
-	            offerLetter, passbook, education, experienceLetter);
+	    return empService.updateEmployeeAll(
+	            empId,emp,file,aadhar,pan_card,higherEducation,bankStatement,salarySlip,passbook,education,resume,offerLetter,experienceLetter
+	    );
 	}
 	
 	@PostMapping("/uploadExcel")
