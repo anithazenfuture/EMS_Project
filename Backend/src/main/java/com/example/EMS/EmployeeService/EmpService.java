@@ -89,6 +89,7 @@ public class EmpService {
 			@RequestPart(value= "education", required= false) MultipartFile education,
 			@RequestPart(value="resume", required= false) MultipartFile resume,
 			@RequestPart(value="offerLetter", required= false) MultipartFile offerLetter,
+			@RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
 			@RequestPart(value="experienceLetter", required= false) List<MultipartFile> experienceLetter){
 		
 		Optional<Employee> empId = empRepo.findByEmployeeId(emp.getEmployeeId());
@@ -244,6 +245,31 @@ public class EmpService {
 		    }
 		}
 		
+		if (prevExpLetter != null && !prevExpLetter.isEmpty()) {
+		    try {
+		        if (emp.getExperience() == null) {
+		            emp.setExperience(new ArrayList<>());
+		        }
+
+		        for (int i = 0; i < prevExpLetter.size(); i++) {
+		            MultipartFile files = prevExpLetter.get(i);
+		            String fileName = saveFile(files, "uploadsPdf");
+		            Experience exp;
+		            if (emp.getExperience().size() > i) {
+		                exp = emp.getExperience().get(i);
+		            } else {
+		                exp = new Experience();
+		                emp.getExperience().add(exp);
+		            }
+
+		            exp.setOfferLetter_exp(fileName);
+		        }
+
+		    } catch (Exception e) {
+		        return ResponseEntity.status(500).body("Experience upload failed "+e);
+		    }
+		}
+		
 		if (bankStatement != null && !bankStatement.isEmpty()) {
 		    try {
 
@@ -351,252 +377,481 @@ public class EmpService {
     // ══════════════════════════════════════════════════════════════════
     // CREATE — bulk upload via Excel  - Need to update for newly added fields
     // ══════════════════════════════════════════════════════════════════
-    public ResponseEntity<?> createUserXL(
-            MultipartFile xlFile,
-            MultipartFile file,
-            MultipartFile passbook,
-            MultipartFile education,
-            MultipartFile resume,
-            MultipartFile offerLetter,
-            List<MultipartFile> experienceLetter) {
+	public ResponseEntity<?> createUserXL(
 
-        try {
-            Workbook workbook = new XSSFWorkbook(xlFile.getInputStream());
-            Sheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rows = sheet.iterator();
+	        MultipartFile xlFile,
 
-            if (rows.hasNext()) rows.next(); 
-            if (rows.hasNext()) rows.next(); 
-            
-            List<Employee> lst = new ArrayList<>();
+	        List<MultipartFile> file,
+	        List<MultipartFile> aadhar,
+	        List<MultipartFile> pan_card,
+	        List<MultipartFile> higherEducation,
+	        List<MultipartFile> bankStatement,
+	        List<MultipartFile> salarySlip,
+	        List<MultipartFile> passbook,
+	        List<MultipartFile> education,
+	        List<MultipartFile> resume,
+	        List<MultipartFile> offerLetter,
+	        List<MultipartFile> prevExpLetter,
+	        List<MultipartFile> experienceLetter) {
 
-            while (rows.hasNext()) {
-                Row row = rows.next();
+	    try {
 
-                if (row == null || row.getCell(0) == null
-                        || getCellValue(row.getCell(0)).isEmpty()) continue;
+	        Workbook workbook = new XSSFWorkbook(xlFile.getInputStream());
 
-                // ── 1. BASIC DETAILS (cols 0–12) ──────────────────────
-                Employee emp = new Employee();
-                emp.setFirst_name(getCellValue(row.getCell(0)));
-                emp.setLast_name(getCellValue(row.getCell(1)));
-                String email = getCellValue(row.getCell(2));
-                
-                Optional<Employee> empId = empRepo.findByEmployeeId(emp.getEmployeeId());
-        		if(empId != null && empId.isPresent()) {
-        			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User Already exists with Employee Id: "+ empId.get().getEmployeeId());
-        		}
-        		
-        		Optional<Employee> emailuser = empRepo.findByEmail(email);
-        		
-        		if(emailuser.isPresent()) {
-        			continue;
-        		}
-                emp.setEmail(email);
-                
+	        Sheet sheet = workbook.getSheetAt(0);
 
-                Long phone = parseLong(getCellValue(row.getCell(3)));
-                if (phone != null) emp.setPhone_number(phone);
+	        Iterator<Row> rows = sheet.iterator();
 
-                emp.setDate_of_birth(parseDate(row.getCell(4)));
-                emp.setMarital_status(getCellValue(row.getCell(5)));
-                emp.setGender(getCellValue(row.getCell(6)));
-                emp.setBlood_group(getCellValue(row.getCell(7)));
-                emp.setState(getCellValue(row.getCell(8)));
-                emp.setPincode(getCellValue(row.getCell(9)));
-                emp.setAadhar_number(getCellValue(row.getCell(10)));
-                emp.setPan_number(getCellValue(row.getCell(11)));
-                emp.setAddress(getCellValue(row.getCell(12)));
-                
-                String roleValue = getCellValue(row.getCell(13));
-                if(roleValue != null) {
+	        if (rows.hasNext()) rows.next();
+	        if (rows.hasNext()) rows.next();
 
-                    switch(roleValue.trim().toUpperCase()) {
+	        List<Employee> lst = new ArrayList<>();
 
-                        case "ADMIN":
-                            emp.setRole(Role.ADMIN);
-                            break;
+	        int rowIndex = 0;
 
-                        case "HR":
-                            emp.setRole(Role.HR);
-                            break;
+	        while (rows.hasNext()) {
 
-                        case "MANAGER":
-                            emp.setRole(Role.MANAGER);
-                            break;
+	            Row row = rows.next();
 
-                        case "EMPLOYEE":
-                            emp.setRole(Role.EMPLOYEE);
-                            break;
+	            if (row == null ||
+	                row.getCell(0) == null ||
+	                getCellValue(row.getCell(0)).isEmpty()) {
+	                continue;
+	            }
 
-                        default:
-                            emp.setRole(Role.EMPLOYEE); // default role
-                            break;
-                    }
+	            Employee emp = new Employee();
 
-                } else {
-                    emp.setRole(Role.EMPLOYEE);
-                }
+	            // =====================================================
+	            // BASIC DETAILS
+	            // =====================================================
 
-             // ── 2. BANK DETAILS (cols 14–18) ───────────────────────
-                String bankName = getCellValue(row.getCell(14));
-                if (!bankName.isEmpty()) {
+	            emp.setFirst_name(getCellValue(row.getCell(0)));
+	            emp.setLast_name(getCellValue(row.getCell(1)));
 
-                    BankDetails bank = new BankDetails();
+	            String email = getCellValue(row.getCell(2));
 
-                    bank.setBankName(bankName);
-                    bank.setAccountHolderName(getCellValue(row.getCell(15)));
+	            Optional<Employee> emailuser = empRepo.findByEmail(email);
 
-                    Long accNo = parseLong(getCellValue(row.getCell(16)));
+	            if (emailuser.isPresent()) {
+	                rowIndex++;
+	                continue;
+	            }
 
-                    if (accNo != null) {
-                        bank.setAccountNumber(accNo);
-                        bank.setConfirmAccountNumber(accNo);
-                    }
+	            emp.setEmail(email);
 
-                    bank.setBranchName(getCellValue(row.getCell(17)));
-                    bank.setIfsc_Number(getCellValue(row.getCell(18)));
+	            Long phone = parseLong(getCellValue(row.getCell(3)));
 
-                    bank.setEmployee(emp);
-                    emp.setBankDetails(bank);
-                }
+	            if (phone != null) {
+	                emp.setPhone_number(phone);
+	            }
 
-                // ── 3. PROFESSIONAL DETAILS (cols 19–28) ──────────────
-                String designation = getCellValue(row.getCell(19));
+	            emp.setDate_of_birth(parseDate(row.getCell(4)));
+	            emp.setMarital_status(getCellValue(row.getCell(5)));
+	            emp.setGender(getCellValue(row.getCell(6)));
+	            emp.setBlood_group(getCellValue(row.getCell(7)));
+	            emp.setState(getCellValue(row.getCell(8)));
+	            emp.setPincode(getCellValue(row.getCell(9)));
+	            emp.setAadhar_number(getCellValue(row.getCell(10)));
+	            emp.setPan_number(getCellValue(row.getCell(11)));
+	            emp.setAddress(getCellValue(row.getCell(12)));
 
-                if (!designation.isEmpty()) {
+	            String roleValue = getCellValue(row.getCell(13));
 
-                    ProfessionalDetails pd = new ProfessionalDetails();
+	            if (roleValue != null) {
 
-                    pd.setProfessional_designation(designation);
-                    pd.setProfessional_department(getCellValue(row.getCell(20)));
-                    pd.setEmp_type(getCellValue(row.getCell(21)));
-                    pd.setLocation(getCellValue(row.getCell(22)));
-                    pd.setEmp_status(getCellValue(row.getCell(23)));
-                    pd.setExp_level(getCellValue(row.getCell(24)));
-                    pd.setSkills(getCellValue(row.getCell(25)));
-                    pd.setDoj(parseDate(row.getCell(26)));
-                    pd.setProbation_period(getCellValue(row.getCell(27)));
-                    pd.setConfirmation_date(parseDate(row.getCell(28)));
+	                switch (roleValue.trim().toUpperCase()) {
 
-                    pd.setEmployee(emp);
-                    emp.setProfessional_details(pd);
+	                    case "ADMIN":
+	                        emp.setRole(Role.ADMIN);
+	                        break;
 
-                    Long maxId = empRepo.findMaxId();
+	                    case "HR":
+	                        emp.setRole(Role.HR);
+	                        break;
 
-                    String detail = emp.getProfessional_details().getEmp_type();
+	                    case "MANAGER":
+	                        emp.setRole(Role.MANAGER);
+	                        break;
 
-                    String type = detail.substring(0, 1).toUpperCase();
+	                    default:
+	                        emp.setRole(Role.EMPLOYEE);
+	                        break;
+	                }
+	            }
 
-                    long nextId = (maxId == null) ? 1 : maxId + 1;
+	            // =====================================================
+	            // PROFILE IMAGE
+	            // =====================================================
 
-                    emp.setEmployeeId(String.format("ZF%s-%03d", type, nextId));
-                }
+	            if (file != null &&
+	                file.size() > rowIndex &&
+	                file.get(rowIndex) != null &&
+	                !file.get(rowIndex).isEmpty()) {
 
-                // ── 4. PAYROLL (cols 29–36) ────────────────────────────
-                String basicPayStr = getCellValue(row.getCell(29));
+	                String fileName = saveFile(file.get(rowIndex), "uploads");
 
-                if (!basicPayStr.isEmpty()) {
+	                emp.setImgFile(fileName);
+	            }
 
-                    EmployeePayroll payroll = new EmployeePayroll();
+	            // =====================================================
+	            // AADHAR PDF
+	            // =====================================================
 
-                    payroll.setBasicPay(parseDouble(getCellValue(row.getCell(29))));
-                    payroll.setHRA(parseDouble(getCellValue(row.getCell(30))));
-                    payroll.setSpecialAllowance(parseDouble(getCellValue(row.getCell(31))));
-                    payroll.setLTA(parseDouble(getCellValue(row.getCell(32))));
-                    payroll.setPF(parseDouble(getCellValue(row.getCell(33))));
-                    payroll.setMedicalAllowance(parseDouble(getCellValue(row.getCell(34))));
-                    payroll.setBonus(parseDouble(getCellValue(row.getCell(35))));
-                    payroll.setAnnualCTC(parseDouble(getCellValue(row.getCell(36))));
+	            if (aadhar != null &&
+	                aadhar.size() > rowIndex &&
+	                aadhar.get(rowIndex) != null &&
+	                !aadhar.get(rowIndex).isEmpty()) {
 
-                    payroll.setEmployee(emp);
+	                String fileName = saveFile(aadhar.get(rowIndex), "uploadsPdf");
 
-                    emp.setEmpPayroll(payroll);
-                }
+	                emp.setAadhar_pdf(fileName);
+	            }
 
-                // ── 5. EMERGENCY CONTACT (cols 37–39) ─────────────────
-                String ecName = getCellValue(row.getCell(37));
+	            // =====================================================
+	            // PAN PDF
+	            // =====================================================
 
-                if (!ecName.isEmpty()) {
+	            if (pan_card != null &&
+	                pan_card.size() > rowIndex &&
+	                pan_card.get(rowIndex) != null &&
+	                !pan_card.get(rowIndex).isEmpty()) {
 
-                    EmergencyContact ec = new EmergencyContact();
+	                String fileName = saveFile(pan_card.get(rowIndex), "uploadsPdf");
 
-                    ec.setName(ecName);
-                    ec.setRelation(getCellValue(row.getCell(38)));
+	                emp.setPan_pdf(fileName);
+	            }
 
-                    Long ecPhone = parseLong(getCellValue(row.getCell(39)));
+	            // =====================================================
+	            // BANK DETAILS
+	            // =====================================================
 
-                    if (ecPhone != null)
-                        ec.setPhone(ecPhone);
+	            String bankName = getCellValue(row.getCell(14));
 
-                    ec.setEmployee(emp);
+	            if (!bankName.isEmpty()) {
 
-                    emp.setEmergency_contact(ec);
-                }
+	                BankDetails bank = new BankDetails();
 
-                // ── 6. EDUCATION (cols 40–47) ──────────────────────────
-                String eduLevel = getCellValue(row.getCell(40));
+	                bank.setBankName(bankName);
+	                bank.setAccountHolderName(getCellValue(row.getCell(15)));
 
-                if (!eduLevel.isEmpty()) {
+	                Long accNo = parseLong(getCellValue(row.getCell(16)));
 
-                    Education edu = new Education();
+	                if (accNo != null) {
+	                    bank.setAccountNumber(accNo);
+	                    bank.setConfirmAccountNumber(accNo);
+	                }
 
-                    edu.setEducationLevel(eduLevel);
-                    edu.setEducationalBoard(getCellValue(row.getCell(41)));
-                    edu.setSchoolName(getCellValue(row.getCell(42)));
-                    edu.setPlace(getCellValue(row.getCell(43)));
-                    edu.setEducationalGroup(getCellValue(row.getCell(44)));
-                    edu.setSchool_from(getCellValue(row.getCell(45)));
-                    edu.setSchool_to(getCellValue(row.getCell(46)));
-                    edu.setSchool_percentage(parseDouble(getCellValue(row.getCell(47))));
+	                bank.setBranchName(getCellValue(row.getCell(17)));
+	                bank.setIfsc_Number(getCellValue(row.getCell(18)));
 
-                    edu.setEmployee(emp);
+	                if (passbook != null &&
+	                    passbook.size() > rowIndex &&
+	                    passbook.get(rowIndex) != null &&
+	                    !passbook.get(rowIndex).isEmpty()) {
 
-                    emp.setEducation(edu);
-                }
+	                    String fileName = saveFile(passbook.get(rowIndex), "uploadsPdf");
 
-                // ── 7. EXPERIENCE (cols 48–56) ─────────────────────────
-                String companyName = getCellValue(row.getCell(48));
+	                    bank.setPassbook_pdf(fileName);
+	                }
 
-                if (!companyName.isEmpty()) {
+	                bank.setEmployee(emp);
 
-                    Experience exp = new Experience();
+	                emp.setBankDetails(bank);
+	            }
 
-                    exp.setCompany_name(companyName);
-                    exp.setJob_title(getCellValue(row.getCell(49)));
-                    exp.setEmp_type_prev(getCellValue(row.getCell(50)));
-                    exp.setEmp_start(parseDate(row.getCell(51)));
-                    exp.setEmp_end(parseDate(row.getCell(52)));
-                    exp.setCurrently_working(getCellValue(row.getCell(53)));
-                    exp.setDuration(getCellValue(row.getCell(54)));
-                    exp.setTech_used(getCellValue(row.getCell(55)));
-                    exp.setRoles_responsibilities(getCellValue(row.getCell(56)));
+	            // =====================================================
+	            // PROFESSIONAL DETAILS
+	            // =====================================================
 
-                    exp.setEmployee(emp);
+	            String designation = getCellValue(row.getCell(19));
 
-                    emp.setExperience(List.of(exp));
-                
-                }
+	            if (!designation.isEmpty()) {
 
-                Employee res = empRepo.save(emp);
-                lst.add(res);
-            }
+	                ProfessionalDetails pd = new ProfessionalDetails();
 
-            workbook.close();
-            if(lst.size() != 0) {
-            	return ResponseEntity.ok("Excel uploaded successfully: "+lst);
-            }
-            else {
-            	return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("No new records available to upload");
-            }
-            
+	                pd.setProfessional_designation(designation);
+	                pd.setProfessional_department(getCellValue(row.getCell(20)));
+	                pd.setEmp_type(getCellValue(row.getCell(21)));
+	                pd.setLocation(getCellValue(row.getCell(22)));
+	                pd.setEmp_status(getCellValue(row.getCell(23)));
+	                pd.setExp_level(getCellValue(row.getCell(24)));
+	                pd.setSkills(getCellValue(row.getCell(25)));
+	                pd.setDoj(parseDate(row.getCell(26)));
+	                pd.setProbation_period(getCellValue(row.getCell(27)));
+	                pd.setConfirmation_date(parseDate(row.getCell(28)));
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("Upload failed: " + e.getMessage());
-        }
-    }
+	                if (resume != null &&
+	                    resume.size() > rowIndex &&
+	                    resume.get(rowIndex) != null &&
+	                    !resume.get(rowIndex).isEmpty()) {
 
+	                    String fileName = saveFile(resume.get(rowIndex), "uploadsPdf");
+
+	                    pd.setResume(fileName);
+	                }
+
+	                if (offerLetter != null &&
+	                    offerLetter.size() > rowIndex &&
+	                    offerLetter.get(rowIndex) != null &&
+	                    !offerLetter.get(rowIndex).isEmpty()) {
+
+	                    String fileName = saveFile(offerLetter.get(rowIndex), "uploadsPdf");
+
+	                    pd.setOffer_letter(fileName);
+	                }
+
+	                pd.setEmployee(emp);
+
+	                emp.setProfessional_details(pd);
+
+	                Long maxId = empRepo.findMaxId();
+
+	                String detail = pd.getEmp_type();
+
+	                String type = detail.substring(0, 1).toUpperCase();
+
+	                long nextId = (maxId == null) ? 1 : maxId + 1;
+
+	                emp.setEmployeeId(String.format("ZF%s-%03d", type, nextId));
+	            }
+
+	            // =====================================================
+	            // PAYROLL
+	            // =====================================================
+
+	            String basicPayStr = getCellValue(row.getCell(29));
+
+	            if (!basicPayStr.isEmpty()) {
+
+	                EmployeePayroll payroll = new EmployeePayroll();
+
+	                payroll.setBasicPay(parseDouble(getCellValue(row.getCell(29))));
+	                payroll.setHRA(parseDouble(getCellValue(row.getCell(30))));
+	                payroll.setSpecialAllowance(parseDouble(getCellValue(row.getCell(31))));
+	                payroll.setLTA(parseDouble(getCellValue(row.getCell(32))));
+	                payroll.setPF(parseDouble(getCellValue(row.getCell(33))));
+	                payroll.setMedicalAllowance(parseDouble(getCellValue(row.getCell(34))));
+	                payroll.setBonus(parseDouble(getCellValue(row.getCell(35))));
+
+	                double ctc = calculateAnnualCTC(
+	                        payroll.getBasicPay(),
+	                        payroll.getHRA(),
+	                        payroll.getSpecialAllowance(),
+	                        payroll.getLTA(),
+	                        payroll.getPF(),
+	                        payroll.getMedicalAllowance(),
+	                        payroll.getBonus());
+
+	                payroll.setAnnualCTC(ctc);
+
+	                payroll.setEmployee(emp);
+
+	                emp.setEmpPayroll(payroll);
+	            }
+
+	            // =====================================================
+	            // EMERGENCY CONTACT
+	            // =====================================================
+
+	            String ecName = getCellValue(row.getCell(37));
+
+	            if (!ecName.isEmpty()) {
+
+	                EmergencyContact ec = new EmergencyContact();
+
+	                ec.setName(ecName);
+	                ec.setRelation(getCellValue(row.getCell(38)));
+
+	                Long ecPhone = parseLong(getCellValue(row.getCell(39)));
+
+	                if (ecPhone != null) {
+	                    ec.setPhone(ecPhone);
+	                }
+
+	                ec.setEmployee(emp);
+
+	                emp.setEmergency_contact(ec);
+	            }
+
+	            // =====================================================
+	            // EDUCATION
+	            // =====================================================
+
+	            String eduLevel = getCellValue(row.getCell(40));
+
+	            if (!eduLevel.isEmpty()) {
+
+	                Education edu = new Education();
+
+	                edu.setEducationLevel(eduLevel);
+	                edu.setEducationalBoard(getCellValue(row.getCell(41)));
+	                edu.setSchoolName(getCellValue(row.getCell(42)));
+	                edu.setPlace(getCellValue(row.getCell(43)));
+	                edu.setEducationalGroup(getCellValue(row.getCell(44)));
+	                edu.setSchool_from(getCellValue(row.getCell(45)));
+	                edu.setSchool_to(getCellValue(row.getCell(46)));
+	                edu.setSchool_percentage(parseDouble(getCellValue(row.getCell(47))));
+
+	                if (education != null &&
+	                    education.size() > rowIndex &&
+	                    education.get(rowIndex) != null &&
+	                    !education.get(rowIndex).isEmpty()) {
+
+	                    String fileName = saveFile(education.get(rowIndex), "uploadsPdf");
+
+	                    edu.setEducation_pdf(fileName);
+	                }
+
+	                // HIGHER EDUCATION
+
+	                List<HigherEducation> higherList = new ArrayList<>();
+
+	                String degree = getCellValue(row.getCell(57));
+
+	                if (!degree.isEmpty()) {
+
+	                    HigherEducation he = new HigherEducation();
+
+	                    he.setDegree(degree);
+	                    he.setInstituition(getCellValue(row.getCell(58)));
+	                    he.setSpecialization(getCellValue(row.getCell(59)));
+	                    he.setDegree_from(getCellValue(row.getCell(60)));
+	                    he.setDegree_to(getCellValue(row.getCell(61)));
+	                    he.setPercentage(parseDouble(getCellValue(row.getCell(62))));
+	                    he.setCertification(getCellValue(row.getCell(63)));
+	                    he.setCourseType(getCellValue(row.getCell(64)));
+
+	                    if (higherEducation != null &&
+	                        higherEducation.size() > rowIndex &&
+	                        higherEducation.get(rowIndex) != null &&
+	                        !higherEducation.get(rowIndex).isEmpty()) {
+
+	                        String fileName = saveFile(
+	                                higherEducation.get(rowIndex),
+	                                "uploadsPdf");
+
+	                        he.setHigherEducation_pdf(fileName);
+	                    }
+
+	                    he.setEducation(edu);
+
+	                    higherList.add(he);
+	                }
+
+	                edu.setHigherEducation(higherList);
+
+	                edu.setEmployee(emp);
+
+	                emp.setEducation(edu);
+	            }
+
+	            // =====================================================
+	            // EXPERIENCE
+	            // =====================================================
+
+	            String companyName = getCellValue(row.getCell(48));
+
+	            if (!companyName.isEmpty()) {
+
+	                Experience exp = new Experience();
+
+	                exp.setCompany_name(companyName);
+	                exp.setJob_title(getCellValue(row.getCell(49)));
+	                exp.setEmp_type_prev(getCellValue(row.getCell(50)));
+	                exp.setEmp_start(parseDate(row.getCell(51)));
+	                exp.setEmp_end(parseDate(row.getCell(52)));
+	                exp.setCurrently_working(getCellValue(row.getCell(53)));
+	                exp.setDuration(getCellValue(row.getCell(54)));
+	                exp.setTech_used(getCellValue(row.getCell(55)));
+	                exp.setRoles_responsibilities(getCellValue(row.getCell(56)));
+
+	                // PREVIOUS EXPERIENCE LETTER
+
+	                if (prevExpLetter != null &&
+	                    prevExpLetter.size() > rowIndex &&
+	                    prevExpLetter.get(rowIndex) != null &&
+	                    !prevExpLetter.get(rowIndex).isEmpty()) {
+
+	                    String fileName = saveFile(
+	                            prevExpLetter.get(rowIndex),
+	                            "uploadsPdf");
+
+	                    exp.setOfferLetter_exp(fileName);
+	                }
+
+	                // EXPERIENCE LETTER
+
+	                if (experienceLetter != null &&
+	                    experienceLetter.size() > rowIndex &&
+	                    experienceLetter.get(rowIndex) != null &&
+	                    !experienceLetter.get(rowIndex).isEmpty()) {
+
+	                    String fileName = saveFile(
+	                            experienceLetter.get(rowIndex),
+	                            "uploadsPdf");
+
+	                    exp.setExp_letter(fileName);
+	                }
+
+	                // BANK STATEMENT
+
+	                if (bankStatement != null &&
+	                    bankStatement.size() > rowIndex &&
+	                    bankStatement.get(rowIndex) != null &&
+	                    !bankStatement.get(rowIndex).isEmpty()) {
+
+	                    String fileName = saveFile(
+	                            bankStatement.get(rowIndex),
+	                            "uploadsPdf");
+
+	                    exp.setBankStatement_pdf(fileName);
+	                }
+
+	                // SALARY SLIP
+
+	                if (salarySlip != null &&
+	                    salarySlip.size() > rowIndex &&
+	                    salarySlip.get(rowIndex) != null &&
+	                    !salarySlip.get(rowIndex).isEmpty()) {
+
+	                    String fileName = saveFile(
+	                            salarySlip.get(rowIndex),
+	                            "uploadsPdf");
+
+	                    exp.setSalarySlip_pdf(fileName);
+	                }
+
+	                exp.setEmployee(emp);
+
+	                emp.setExperience(new ArrayList<>());
+
+	                emp.getExperience().add(exp);
+	            }
+
+	            Employee savedEmp = empRepo.save(emp);
+
+	            lst.add(savedEmp);
+
+	            rowIndex++;
+	        }
+
+	        workbook.close();
+
+	        if (!lst.isEmpty()) {
+	            return ResponseEntity.ok(lst);
+	        }
+
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                .body("No new records available to upload");
+
+	    } catch (Exception e) {
+
+	        e.printStackTrace();
+
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                .body("Upload failed : " + e.getMessage());
+	    }
+	}
     // ══════════════════════════════════════════════════════════════════
     // READ
     // ══════════════════════════════════════════════════════════════════
@@ -737,7 +992,7 @@ public class EmpService {
             MultipartFile aadhar,
             MultipartFile panCard,
             MultipartFile higherEducation,
-
+            List<MultipartFile> prevExpLetter,
             List<MultipartFile> bankStatement,
             List<MultipartFile> salarySlip,
 
@@ -1235,6 +1490,38 @@ public class EmpService {
                 experience.setExp_letter(fileName);
             }
         }
+        
+        
+        if (prevExpLetter != null && !prevExpLetter.isEmpty()) {
+
+            if (existing.getExperience() == null) {
+                existing.setExperience(new ArrayList<>());
+            }
+
+            for (int i = 0; i < prevExpLetter.size(); i++) {
+
+                MultipartFile file = expLetter.get(i);
+
+                String fileName = saveFile(file, "uploadsPdf");
+
+                Experience experience;
+
+                if (existing.getExperience().size() > i) {
+
+                    experience = existing.getExperience().get(i);
+
+                } else {
+
+                    experience = new Experience();
+
+                    experience.setEmployee(existing);
+
+                    existing.getExperience().add(experience);
+                }
+
+                experience.setOfferLetter_exp(fileName);
+            }
+        }
 
         // ================= BANK STATEMENT =================
 
@@ -1463,48 +1750,62 @@ public class EmpService {
     
    
     public ResponseEntity<?> updateUserXL(
+
             MultipartFile xlFile,
-            MultipartFile file,
-            MultipartFile passbook,
-            MultipartFile education,
-            MultipartFile resume,
-            MultipartFile offerLetter,
-            List<MultipartFile> experienceLetter) {
+
+            List<MultipartFile> file,
+            List<MultipartFile> aadhar,
+            List<MultipartFile> pan_card,
+            List<MultipartFile> passbook,
+            List<MultipartFile> education,
+            List<MultipartFile> higherEducation,
+            List<MultipartFile> resume,
+            List<MultipartFile> offerLetter,
+            List<MultipartFile> prevExpLetter,
+            List<MultipartFile> experienceLetter,
+            List<MultipartFile> bankStatement,
+            List<MultipartFile> salarySlip
+
+    ) {
 
         try {
 
             if (xlFile == null || xlFile.isEmpty()) {
-                return ResponseEntity.badRequest().body("Excel file is required");
+                return ResponseEntity.badRequest()
+                        .body("Excel file is required");
             }
 
             Workbook workbook = new XSSFWorkbook(xlFile.getInputStream());
+
             Sheet sheet = workbook.getSheetAt(0);
+
             Iterator<Row> rows = sheet.iterator();
 
-            // Skip heading rows
             if (rows.hasNext()) rows.next();
             if (rows.hasNext()) rows.next();
 
             int updatedCount = 0;
             int skippedCount = 0;
 
+            int rowIndex = 0;
+
             while (rows.hasNext()) {
 
                 Row row = rows.next();
 
-                if (row == null || row.getCell(0) == null
+                if (row == null
+                        || row.getCell(0) == null
                         || getCellValue(row.getCell(0)).isEmpty()) {
+
+                    rowIndex++;
                     continue;
                 }
-
-                // =========================
-                // FIND EMPLOYEE BY EMAIL
-                // =========================
 
                 String email = getCellValue(row.getCell(2));
 
                 if (!hasValue(email)) {
                     skippedCount++;
+                    rowIndex++;
                     continue;
                 }
 
@@ -1512,14 +1813,15 @@ public class EmpService {
 
                 if (!optionalEmp.isPresent()) {
                     skippedCount++;
+                    rowIndex++;
                     continue;
                 }
 
                 Employee emp = optionalEmp.get();
 
-                // =========================
-                // 1. BASIC DETAILS
-                // =========================
+                // =====================================================
+                // BASIC DETAILS
+                // =====================================================
 
                 String firstName = getCellValue(row.getCell(0));
                 if (hasValue(firstName)) {
@@ -1532,375 +1834,568 @@ public class EmpService {
                 }
 
                 Long phone = parseLong(getCellValue(row.getCell(3)));
+
                 if (phone != null) {
                     emp.setPhone_number(phone);
                 }
 
                 Date dob = parseDate(row.getCell(4));
+
                 if (dob != null) {
                     emp.setDate_of_birth(dob);
                 }
 
                 String marital = getCellValue(row.getCell(5));
+
                 if (hasValue(marital)) {
                     emp.setMarital_status(marital);
                 }
 
                 String gender = getCellValue(row.getCell(6));
+
                 if (hasValue(gender)) {
                     emp.setGender(gender);
                 }
 
                 String blood = getCellValue(row.getCell(7));
+
                 if (hasValue(blood)) {
                     emp.setBlood_group(blood);
                 }
 
                 String state = getCellValue(row.getCell(8));
+
                 if (hasValue(state)) {
                     emp.setState(state);
                 }
 
                 String pincode = getCellValue(row.getCell(9));
+
                 if (hasValue(pincode)) {
                     emp.setPincode(pincode);
                 }
 
-                String aadhar = getCellValue(row.getCell(10));
-                if (hasValue(aadhar)) {
-                    emp.setAadhar_number(aadhar);
+                String aadharNo = getCellValue(row.getCell(10));
+
+                if (hasValue(aadharNo)) {
+                    emp.setAadhar_number(aadharNo);
                 }
 
-                String pan = getCellValue(row.getCell(11));
-                if (hasValue(pan)) {
-                    emp.setPan_number(pan);
+                String panNo = getCellValue(row.getCell(11));
+
+                if (hasValue(panNo)) {
+                    emp.setPan_number(panNo);
                 }
 
                 String address = getCellValue(row.getCell(12));
+
                 if (hasValue(address)) {
                     emp.setAddress(address);
                 }
 
-                // =========================
-                // 2. BANK DETAILS
-                // =========================
+                // =====================================================
+                // ROLE
+                // =====================================================
 
-                String bankName = getCellValue(row.getCell(13));
+                String roleValue = getCellValue(row.getCell(13));
+
+                if (roleValue != null) {
+
+                    switch (roleValue.trim().toUpperCase()) {
+
+                        case "ADMIN":
+                            emp.setRole(Role.ADMIN);
+                            break;
+
+                        case "HR":
+                            emp.setRole(Role.HR);
+                            break;
+
+                        case "MANAGER":
+                            emp.setRole(Role.MANAGER);
+                            break;
+
+                        default:
+                            emp.setRole(Role.EMPLOYEE);
+                            break;
+                    }
+                }
+
+                // =====================================================
+                // PROFILE IMAGE
+                // =====================================================
+
+                if (file != null
+                        && file.size() > rowIndex
+                        && file.get(rowIndex) != null
+                        && !file.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            file.get(rowIndex),
+                            "uploads"
+                    );
+
+                    emp.setImgFile(fileName);
+                }
+
+                // =====================================================
+                // AADHAR PDF
+                // =====================================================
+
+                if (aadhar != null
+                        && aadhar.size() > rowIndex
+                        && aadhar.get(rowIndex) != null
+                        && !aadhar.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            aadhar.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    emp.setAadhar_pdf(fileName);
+                }
+
+                // =====================================================
+                // PAN PDF
+                // =====================================================
+
+                if (pan_card != null
+                        && pan_card.size() > rowIndex
+                        && pan_card.get(rowIndex) != null
+                        && !pan_card.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            pan_card.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    emp.setPan_pdf(fileName);
+                }
+
+                // =====================================================
+                // BANK DETAILS
+                // =====================================================
+
+                BankDetails bank = emp.getBankDetails();
+
+                if (bank == null) {
+                    bank = new BankDetails();
+                    bank.setEmployee(emp);
+                }
+
+                String bankName = getCellValue(row.getCell(14));
 
                 if (hasValue(bankName)) {
-
-                    BankDetails bank = emp.getBankDetails();
-
-                    if (bank == null) {
-                        bank = new BankDetails();
-                        bank.setEmployee(emp);
-                    }
-
                     bank.setBankName(bankName);
-
-                    String holderName = getCellValue(row.getCell(14));
-                    if (hasValue(holderName)) {
-                        bank.setAccountHolderName(holderName);
-                    }
-
-                    Long accNo = parseLong(getCellValue(row.getCell(15)));
-
-                    if (accNo != null) {
-                        bank.setAccountNumber(accNo);
-                        bank.setConfirmAccountNumber(accNo);
-                    }
-
-                    String branch = getCellValue(row.getCell(16));
-                    if (hasValue(branch)) {
-                        bank.setBranchName(branch);
-                    }
-
-                    String ifsc = getCellValue(row.getCell(17));
-                    if (hasValue(ifsc)) {
-                        bank.setIfsc_Number(ifsc);
-                    }
-
-                    emp.setBankDetails(bank);
                 }
 
-                // =========================
-                // 3. PROFESSIONAL DETAILS
-                // =========================
+                String holder = getCellValue(row.getCell(15));
 
-                String designation = getCellValue(row.getCell(18));
+                if (hasValue(holder)) {
+                    bank.setAccountHolderName(holder);
+                }
+
+                Long accNo = parseLong(getCellValue(row.getCell(16)));
+
+                if (accNo != null) {
+                    bank.setAccountNumber(accNo);
+                    bank.setConfirmAccountNumber(accNo);
+                }
+
+                String branch = getCellValue(row.getCell(17));
+
+                if (hasValue(branch)) {
+                    bank.setBranchName(branch);
+                }
+
+                String ifsc = getCellValue(row.getCell(18));
+
+                if (hasValue(ifsc)) {
+                    bank.setIfsc_Number(ifsc);
+                }
+
+                if (passbook != null
+                        && passbook.size() > rowIndex
+                        && passbook.get(rowIndex) != null
+                        && !passbook.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            passbook.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    bank.setPassbook_pdf(fileName);
+                }
+
+                emp.setBankDetails(bank);
+
+                // =====================================================
+                // PROFESSIONAL DETAILS
+                // =====================================================
+
+                ProfessionalDetails pd = emp.getProfessional_details();
+
+                if (pd == null) {
+                    pd = new ProfessionalDetails();
+                    pd.setEmployee(emp);
+                }
+
+                String designation = getCellValue(row.getCell(19));
 
                 if (hasValue(designation)) {
-
-                    ProfessionalDetails pd = emp.getProfessional_details();
-
-                    if (pd == null) {
-                        pd = new ProfessionalDetails();
-                        pd.setEmployee(emp);
-                    }
-
                     pd.setProfessional_designation(designation);
-
-                    String dept = getCellValue(row.getCell(19));
-                    if (hasValue(dept)) {
-                        pd.setProfessional_department(dept);
-                    }
-
-                    String empType = getCellValue(row.getCell(20));
-                    if (hasValue(empType)) {
-                        pd.setEmp_type(empType);
-                    }
-
-                    String location = getCellValue(row.getCell(21));
-                    if (hasValue(location)) {
-                        pd.setLocation(location);
-                    }
-
-                    String status = getCellValue(row.getCell(22));
-                    if (hasValue(status)) {
-                        pd.setEmp_status(status);
-                    }
-
-                    String expLevel = getCellValue(row.getCell(23));
-                    if (hasValue(expLevel)) {
-                        pd.setExp_level(expLevel);
-                    }
-
-                    String skills = getCellValue(row.getCell(24));
-                    if (hasValue(skills)) {
-                        pd.setSkills(skills);
-                    }
-
-                    Date doj = parseDate(row.getCell(25));
-                    if (doj != null) {
-                        pd.setDoj(doj);
-                    }
-
-                    String probation = getCellValue(row.getCell(26));
-                    if (hasValue(probation)) {
-                        pd.setProbation_period(probation);
-                    }
-
-                    Date confirmDate = parseDate(row.getCell(27));
-                    if (confirmDate != null) {
-                        pd.setConfirmation_date(confirmDate);
-                    }
-
-                    emp.setProfessional_details(pd);
                 }
 
-                // =========================
-                // 4. PAYROLL
-                // =========================
+                String dept = getCellValue(row.getCell(20));
 
-                String basicPayStr = getCellValue(row.getCell(28));
-
-                if (hasValue(basicPayStr)) {
-
-                    EmployeePayroll payroll = emp.getEmpPayroll();
-
-                    if (payroll == null) {
-                        payroll = new EmployeePayroll();
-                        payroll.setEmployee(emp);
-                    }
-
-                    Double basicPay = parseDouble(getCellValue(row.getCell(28)));
-                    if (basicPay != null) {
-                        payroll.setBasicPay(basicPay);
-                    }
-
-                    Double hra = parseDouble(getCellValue(row.getCell(29)));
-                    if (hra != null) {
-                        payroll.setHRA(hra);
-                    }
-
-                    Double special = parseDouble(getCellValue(row.getCell(30)));
-                    if (special != null) {
-                        payroll.setSpecialAllowance(special);
-                    }
-
-                    Double lta = parseDouble(getCellValue(row.getCell(31)));
-                    if (lta != null) {
-                        payroll.setLTA(lta);
-                    }
-
-                    Double pf = parseDouble(getCellValue(row.getCell(32)));
-                    if (pf != null) {
-                        payroll.setPF(pf);
-                    }
-
-                    Double medical = parseDouble(getCellValue(row.getCell(33)));
-                    if (medical != null) {
-                        payroll.setMedicalAllowance(medical);
-                    }
-
-                    Double bonus = parseDouble(getCellValue(row.getCell(34)));
-                    if (bonus != null) {
-                        payroll.setBonus(bonus);
-                    }
-
-                    Double ctc = parseDouble(getCellValue(row.getCell(35)));
-                    if (ctc != null) {
-                        payroll.setAnnualCTC(ctc);
-                    }
-
-                    emp.setEmpPayroll(payroll);
+                if (hasValue(dept)) {
+                    pd.setProfessional_department(dept);
                 }
 
-                // =========================
-                // 5. EMERGENCY CONTACT
-                // =========================
+                String empType = getCellValue(row.getCell(21));
 
-                String ecName = getCellValue(row.getCell(36));
+                if (hasValue(empType)) {
+                    pd.setEmp_type(empType);
+                }
+
+                String location = getCellValue(row.getCell(22));
+
+                if (hasValue(location)) {
+                    pd.setLocation(location);
+                }
+
+                String status = getCellValue(row.getCell(23));
+
+                if (hasValue(status)) {
+                    pd.setEmp_status(status);
+                }
+
+                String expLevel = getCellValue(row.getCell(24));
+
+                if (hasValue(expLevel)) {
+                    pd.setExp_level(expLevel);
+                }
+
+                String skills = getCellValue(row.getCell(25));
+
+                if (hasValue(skills)) {
+                    pd.setSkills(skills);
+                }
+
+                Date doj = parseDate(row.getCell(26));
+
+                if (doj != null) {
+                    pd.setDoj(doj);
+                }
+
+                String probation = getCellValue(row.getCell(27));
+
+                if (hasValue(probation)) {
+                    pd.setProbation_period(probation);
+                }
+
+                Date confirmDate = parseDate(row.getCell(28));
+
+                if (confirmDate != null) {
+                    pd.setConfirmation_date(confirmDate);
+                }
+
+                if (resume != null
+                        && resume.size() > rowIndex
+                        && resume.get(rowIndex) != null
+                        && !resume.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            resume.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    pd.setResume(fileName);
+                }
+
+                if (offerLetter != null
+                        && offerLetter.size() > rowIndex
+                        && offerLetter.get(rowIndex) != null
+                        && !offerLetter.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            offerLetter.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    pd.setOffer_letter(fileName);
+                }
+
+                emp.setProfessional_details(pd);
+
+                // =====================================================
+                // PAYROLL
+                // =====================================================
+
+                EmployeePayroll payroll = emp.getEmpPayroll();
+
+                if (payroll == null) {
+                    payroll = new EmployeePayroll();
+                    payroll.setEmployee(emp);
+                }
+
+                Double basic = parseDouble(getCellValue(row.getCell(29)));
+                Double hra = parseDouble(getCellValue(row.getCell(30)));
+                Double special = parseDouble(getCellValue(row.getCell(31)));
+                Double lta = parseDouble(getCellValue(row.getCell(32)));
+                Double pf = parseDouble(getCellValue(row.getCell(33)));
+                Double medical = parseDouble(getCellValue(row.getCell(34)));
+                Double bonus = parseDouble(getCellValue(row.getCell(35)));
+
+                if (basic != null) payroll.setBasicPay(basic);
+                if (hra != null) payroll.setHRA(hra);
+                if (special != null) payroll.setSpecialAllowance(special);
+                if (lta != null) payroll.setLTA(lta);
+                if (pf != null) payroll.setPF(pf);
+                if (medical != null) payroll.setMedicalAllowance(medical);
+                if (bonus != null) payroll.setBonus(bonus);
+
+                double ctc = calculateAnnualCTC(
+                        payroll.getBasicPay(),
+                        payroll.getHRA(),
+                        payroll.getSpecialAllowance(),
+                        payroll.getLTA(),
+                        payroll.getPF(),
+                        payroll.getMedicalAllowance(),
+                        payroll.getBonus()
+                );
+
+                payroll.setAnnualCTC(ctc);
+
+                emp.setEmpPayroll(payroll);
+
+                // =====================================================
+                // EMERGENCY CONTACT
+                // =====================================================
+
+                EmergencyContact ec = emp.getEmergency_contact();
+
+                if (ec == null) {
+                    ec = new EmergencyContact();
+                    ec.setEmployee(emp);
+                }
+
+                String ecName = getCellValue(row.getCell(37));
 
                 if (hasValue(ecName)) {
-
-                    EmergencyContact ec = emp.getEmergency_contact();
-
-                    if (ec == null) {
-                        ec = new EmergencyContact();
-                        ec.setEmployee(emp);
-                    }
-
                     ec.setName(ecName);
-
-                    String relation = getCellValue(row.getCell(37));
-                    if (hasValue(relation)) {
-                        ec.setRelation(relation);
-                    }
-
-                    Long ecPhone = parseLong(getCellValue(row.getCell(38)));
-
-                    if (ecPhone != null) {
-                        ec.setPhone(ecPhone);
-                    }
-
-                    emp.setEmergency_contact(ec);
                 }
 
-                // =========================
-                // 6. EDUCATION
-                // =========================
+                String relation = getCellValue(row.getCell(38));
 
-                String eduLevel = getCellValue(row.getCell(39));
-
-                if (hasValue(eduLevel)) {
-
-                    Education edu = emp.getEducation();
-
-                    if (edu == null) {
-                        edu = new Education();
-                        edu.setEmployee(emp);
-                    }
-
-                    edu.setEducationLevel(eduLevel);
-
-                    String board = getCellValue(row.getCell(40));
-                    if (hasValue(board)) {
-                        edu.setEducationalBoard(board);
-                    }
-
-                    String school = getCellValue(row.getCell(41));
-                    if (hasValue(school)) {
-                        edu.setSchoolName(school);
-                    }
-
-                    String place = getCellValue(row.getCell(42));
-                    if (hasValue(place)) {
-                        edu.setPlace(place);
-                    }
-
-                    String group = getCellValue(row.getCell(43));
-                    if (hasValue(group)) {
-                        edu.setEducationalGroup(group);
-                    }
-
-                    String from = getCellValue(row.getCell(44));
-                    if (hasValue(from)) {
-                        edu.setSchool_from(from);
-                    }
-
-                    String to = getCellValue(row.getCell(45));
-                    if (hasValue(to)) {
-                        edu.setSchool_to(to);
-                    }
-
-                    Double percentage = parseDouble(getCellValue(row.getCell(46)));
-
-                    if (percentage != null) {
-                        edu.setSchool_percentage(percentage);
-                    }
-
-                    emp.setEducation(edu);
+                if (hasValue(relation)) {
+                    ec.setRelation(relation);
                 }
 
-                // =========================
-                // 7. EXPERIENCE
-                // =========================
+                Long ecPhone = parseLong(getCellValue(row.getCell(39)));
 
-                String companyName = getCellValue(row.getCell(47));
-
-                if (hasValue(companyName)) {
-
-                    Experience exp;
-
-                    if (emp.getExperience() != null && !emp.getExperience().isEmpty()) {
-                        exp = emp.getExperience().get(0);
-                    } else {
-                        exp = new Experience();
-                        exp.setEmployee(emp);
-                    }
-
-                    exp.setCompany_name(companyName);
-
-                    String jobTitle = getCellValue(row.getCell(48));
-                    if (hasValue(jobTitle)) {
-                        exp.setJob_title(jobTitle);
-                    }
-
-                    String prevType = getCellValue(row.getCell(49));
-                    if (hasValue(prevType)) {
-                        exp.setEmp_type_prev(prevType);
-                    }
-
-                    Date start = parseDate(row.getCell(50));
-                    if (start != null) {
-                        exp.setEmp_start(start);
-                    }
-
-                    Date end = parseDate(row.getCell(51));
-                    if (end != null) {
-                        exp.setEmp_end(end);
-                    }
-
-                    String working = getCellValue(row.getCell(52));
-                    if (hasValue(working)) {
-                        exp.setCurrently_working(working);
-                    }
-
-                    String duration = getCellValue(row.getCell(53));
-                    if (hasValue(duration)) {
-                        exp.setDuration(duration);
-                    }
-
-                    String tech = getCellValue(row.getCell(54));
-                    if (hasValue(tech)) {
-                        exp.setTech_used(tech);
-                    }
-
-                    String roles = getCellValue(row.getCell(55));
-                    if (hasValue(roles)) {
-                        exp.setRoles_responsibilities(roles);
-                    }
-
-                    emp.setExperience(List.of(exp));
+                if (ecPhone != null) {
+                    ec.setPhone(ecPhone);
                 }
 
-                // =========================
+                emp.setEmergency_contact(ec);
+
+                // =====================================================
+                // EDUCATION
+                // =====================================================
+
+                Education edu = emp.getEducation();
+
+                if (edu == null) {
+                    edu = new Education();
+                    edu.setEmployee(emp);
+                }
+
+                edu.setEducationLevel(getCellValue(row.getCell(40)));
+                edu.setEducationalBoard(getCellValue(row.getCell(41)));
+                edu.setSchoolName(getCellValue(row.getCell(42)));
+                edu.setPlace(getCellValue(row.getCell(43)));
+                edu.setEducationalGroup(getCellValue(row.getCell(44)));
+                edu.setSchool_from(getCellValue(row.getCell(45)));
+                edu.setSchool_to(getCellValue(row.getCell(46)));
+
+                Double eduPercentage = parseDouble(
+                        getCellValue(row.getCell(47))
+                );
+
+                if (eduPercentage != null) {
+                    edu.setSchool_percentage(eduPercentage);
+                }
+
+                if (education != null
+                        && education.size() > rowIndex
+                        && education.get(rowIndex) != null
+                        && !education.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            education.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    edu.setEducation_pdf(fileName);
+                }
+
+                // =====================================================
+                // HIGHER EDUCATION
+                // =====================================================
+
+                List<HigherEducation> heList =
+                        edu.getHigherEducation();
+
+                if (heList == null) {
+                    heList = new ArrayList<>();
+                }
+
+                HigherEducation he;
+
+                if (!heList.isEmpty()) {
+                    he = heList.get(0);
+                } else {
+                    he = new HigherEducation();
+                }
+
+                he.setDegree(getCellValue(row.getCell(48)));
+                he.setInstituition(getCellValue(row.getCell(49)));
+                he.setSpecialization(getCellValue(row.getCell(50)));
+                he.setDegree_from(getCellValue(row.getCell(51)));
+                he.setDegree_to(getCellValue(row.getCell(52)));
+
+                Double hePercent = parseDouble(
+                        getCellValue(row.getCell(53))
+                );
+
+                if (hePercent != null) {
+                    he.setPercentage(hePercent);
+                }
+
+                he.setCertification(getCellValue(row.getCell(54)));
+                he.setCourseType(getCellValue(row.getCell(55)));
+
+                if (higherEducation != null
+                        && higherEducation.size() > rowIndex
+                        && higherEducation.get(rowIndex) != null
+                        && !higherEducation.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            higherEducation.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    he.setHigherEducation_pdf(fileName);
+                }
+
+                he.setEducation(edu);
+
+                if (heList.isEmpty()) {
+                    heList.add(he);
+                }
+
+                edu.setHigherEducation(heList);
+
+                emp.setEducation(edu);
+
+                // =====================================================
+                // EXPERIENCE
+                // =====================================================
+
+                List<Experience> expList = emp.getExperience();
+
+                if (expList == null) {
+                    expList = new ArrayList<>();
+                }
+
+                Experience exp;
+
+                if (!expList.isEmpty()) {
+                    exp = expList.get(0);
+                } else {
+                    exp = new Experience();
+                }
+
+                exp.setCompany_name(getCellValue(row.getCell(56)));
+                exp.setJob_title(getCellValue(row.getCell(57)));
+                exp.setEmp_type_prev(getCellValue(row.getCell(58)));
+                exp.setEmp_start(parseDate(row.getCell(59)));
+                exp.setEmp_end(parseDate(row.getCell(60)));
+                exp.setCurrently_working(getCellValue(row.getCell(61)));
+                exp.setDuration(getCellValue(row.getCell(62)));
+                exp.setTech_used(getCellValue(row.getCell(63)));
+                exp.setRoles_responsibilities(getCellValue(row.getCell(64)));
+
+                if (prevExpLetter != null
+                        && prevExpLetter.size() > rowIndex
+                        && prevExpLetter.get(rowIndex) != null
+                        && !prevExpLetter.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            prevExpLetter.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    exp.setExp_letter(fileName);
+                }
+
+                if (experienceLetter != null
+                        && experienceLetter.size() > rowIndex
+                        && experienceLetter.get(rowIndex) != null
+                        && !experienceLetter.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            experienceLetter.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    exp.setExp_letter(fileName);
+                }
+
+                if (bankStatement != null
+                        && bankStatement.size() > rowIndex
+                        && bankStatement.get(rowIndex) != null
+                        && !bankStatement.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            bankStatement.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    exp.setBankStatement_pdf(fileName);
+                }
+
+                if (salarySlip != null
+                        && salarySlip.size() > rowIndex
+                        && salarySlip.get(rowIndex) != null
+                        && !salarySlip.get(rowIndex).isEmpty()) {
+
+                    String fileName = saveFile(
+                            salarySlip.get(rowIndex),
+                            "uploadsPdf"
+                    );
+
+                    exp.setSalarySlip_pdf(fileName);
+                }
+
+                exp.setEmployee(emp);
+
+                if (expList.isEmpty()) {
+                    expList.add(exp);
+                }
+
+                emp.setExperience(expList);
+
+                // =====================================================
                 // SAVE
-                // =========================
+                // =====================================================
 
                 empRepo.save(emp);
+
                 updatedCount++;
+
+                rowIndex++;
             }
 
             workbook.close();
@@ -1909,7 +2404,8 @@ public class EmpService {
                     "Excel Update Completed Successfully. Updated: "
                             + updatedCount
                             + ", Skipped: "
-                            + skippedCount);
+                            + skippedCount
+            );
 
         } catch (Exception e) {
 
@@ -1919,8 +2415,6 @@ public class EmpService {
                     .body("Update Failed : " + e.getMessage());
         }
     }
-    
-    
     private boolean hasValue(String value) {
         return value != null && !value.trim().isEmpty();
     }

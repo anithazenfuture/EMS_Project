@@ -93,7 +93,7 @@ public class EmpController {
 	        @RequestPart(value = "aadhar", required = false) MultipartFile aadhar,
 	        @RequestPart(value = "pan_card", required = false) MultipartFile pan_card,
 	        @RequestPart(value = "higherEducation", required = false) MultipartFile higherEducation,
-	        
+	        @RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
 	        @RequestPart(value = "bankStatement", required = false)
 	        List<MultipartFile> bankStatement,
 	        
@@ -118,14 +118,15 @@ public class EmpController {
 	) throws Exception {
 
 	    return empService.updateEmployeeAll(
-	            empId,emp,file,aadhar,pan_card,higherEducation,bankStatement,salarySlip,passbook,education,resume,offerLetter,experienceLetter
+	            empId,emp,file,aadhar,pan_card,higherEducation,bankStatement,salarySlip,prevExpLetter,passbook,education,resume,offerLetter,experienceLetter
 	    );
 	}
 	
 	@PostMapping(value = "/uploadExcel", consumes = "multipart/form-data")
 	public ResponseEntity<?> createUserXL(
 
-	        @RequestPart(value = "xlFile") MultipartFile xlFile,
+	        @RequestPart(value = "xlFile")
+	        MultipartFile xlFile,
 
 	        @RequestPart(value = "file", required = false)
 	        List<MultipartFile> file,
@@ -157,6 +158,9 @@ public class EmpController {
 	        @RequestPart(value = "offerLetter", required = false)
 	        List<MultipartFile> offerLetter,
 
+	        @RequestPart(value = "prevExpLetter", required = false)
+	        List<MultipartFile> prevExpLetter,
+
 	        @RequestPart(value = "experienceLetter", required = false)
 	        List<MultipartFile> experienceLetter) {
 
@@ -172,13 +176,15 @@ public class EmpController {
 	            education,
 	            resume,
 	            offerLetter,
+	            prevExpLetter,
 	            experienceLetter);
 	}
 	
-	@PatchMapping("/updateExcel")
+	@PatchMapping(value = "/updateExcel", consumes = "multipart/form-data")
 	public ResponseEntity<?> updateUserXL(
 
-	        @RequestPart(value = "xlFile", required = false) MultipartFile xlFile,
+	        @RequestPart(value = "xlFile", required = false)
+	        MultipartFile xlFile,
 
 	        @RequestPart(value = "file", required = false)
 	        List<MultipartFile> file,
@@ -204,6 +210,9 @@ public class EmpController {
 	        @RequestPart(value = "offerLetter", required = false)
 	        List<MultipartFile> offerLetter,
 
+	        @RequestPart(value = "prevExpLetter", required = false)
+	        List<MultipartFile> prevExpLetter,
+
 	        @RequestPart(value = "experienceLetter", required = false)
 	        List<MultipartFile> experienceLetter,
 
@@ -225,12 +234,12 @@ public class EmpController {
 	            higherEducation,
 	            resume,
 	            offerLetter,
+	            prevExpLetter,
 	            experienceLetter,
 	            bankStatement,
 	            salarySlip
 	    );
 	}
-	
 	
 	
 	
