@@ -6,8 +6,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -81,7 +83,7 @@ public class EmpService {
 			
 			@RequestPart(value= "aadhar", required=false) MultipartFile aadhar,
 			@RequestPart(value= "pan_card", required=false) MultipartFile pan_card,
-			@RequestPart(value= "higerEducation", required=false) MultipartFile higherEducation,
+			@RequestPart(value= "higherEducation", required=false) List<MultipartFile> higherEducation,
 			@RequestPart(value= "bankStatement", required=false) List<MultipartFile> bankStatement,
 			@RequestPart(value= "salarySlip", required=false) List<MultipartFile> salarySlip,
 			
@@ -172,17 +174,7 @@ public class EmpService {
 				
 				emp.getEducation().setEducation_pdf(fileName);
 				
-				if(higherEducation != null && !higherEducation.isEmpty() ) {
-					if(emp.getEducation().getHigherEducation() == null) {
-						emp.getEducation().setHigherEducation(new ArrayList<HigherEducation>());
-					}
-					
-					for(int i=0;i<higherEducation.getSize();i++) {
-						HigherEducation hr = emp.getEducation().getHigherEducation().get(i);
-						String fileName1 = saveFile(higherEducation, "uploadsPdf");
-						hr.setHigherEducation_pdf(fileName1);
-					}
-				}
+				
 				
 				
 			}
@@ -191,6 +183,24 @@ public class EmpService {
 			}
 		}
 		
+		if(higherEducation != null && !higherEducation.isEmpty() ) {
+			try {
+				System.out.println("heree");
+				if(emp.getEducation().getHigherEducation() == null) {
+					emp.getEducation().setHigherEducation(new ArrayList<HigherEducation>());
+				}
+				
+				for(int i=0;i<higherEducation.size();i++) {
+					HigherEducation hr = emp.getEducation().getHigherEducation().get(i);
+					String fileName1 = saveFile(higherEducation.get(i), "uploadsPdf");
+					hr.setHigherEducation_pdf(fileName1);
+				}
+			}
+			catch(Exception e) {
+				return ResponseEntity.status(500).body("Higher Educational Pdf upload failed "+e);
+			}
+			
+		}
 		
 		if(resume != null && !resume.isEmpty()) {
 			try {
@@ -403,7 +413,26 @@ public class EmpService {
 	        Iterator<Row> rows = sheet.iterator();
 
 	        if (rows.hasNext()) rows.next();
-	        if (rows.hasNext()) rows.next();
+
+	        Map<String, Integer> map = new HashMap<>();
+	        
+	        Row headRow = null;
+	        if(rows.hasNext()) {
+	        	headRow = rows.next();
+	        }
+	        
+	        if (headRow != null) {
+
+	            for (Cell cell : headRow) {
+
+	                map.put(
+	                    cell.getStringCellValue().trim(),
+	                    cell.getColumnIndex()
+	                );
+	            }
+	        }
+	        
+	        
 
 	        List<Employee> lst = new ArrayList<>();
 

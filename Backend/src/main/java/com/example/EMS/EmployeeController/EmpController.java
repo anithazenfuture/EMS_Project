@@ -44,7 +44,7 @@ public class EmpController {
 			
 			@RequestPart(value= "aadhar", required=false) MultipartFile aadhar,
 			@RequestPart(value= "pan_card", required=false) MultipartFile pan_card,
-			@RequestPart(value= "higherEducation", required=false) MultipartFile higherEducation,
+			@RequestPart(value= "higherEducation", required=false) List<MultipartFile> higherEducation,
 			@RequestPart(value= "bankStatement", required=false) List<MultipartFile> bankStatement,
 			@RequestPart(value= "salarySlip", required=false) List<MultipartFile> salarySlip,
 			
