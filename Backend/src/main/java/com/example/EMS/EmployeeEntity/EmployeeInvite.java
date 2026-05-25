@@ -34,10 +34,12 @@ public class EmployeeInvite {
     private String blood_group;
     private String state;
     private String pincode;
-    private String aadhar_number;
-    private String pan_number;
+    private String aadhar_pdf;
+    private String pan_pdf;
     private String address;
     private String imgFile;
+    private String aadhar_number;
+    private String pan_number;
     private String status="Pending";
     
     
@@ -46,6 +48,7 @@ public class EmployeeInvite {
 	
 	@OneToOne(cascade= CascadeType.ALL)
 	private EmployeePayroll empPayroll;
+	
 	
 	@OneToOne(cascade= CascadeType.ALL)
     private EmergencyContact emergency_contact;
@@ -96,6 +99,7 @@ public class EmployeeInvite {
 	public Long getPhone_number() {
 		return phone_number;
 	}
+	
 
 	public void setPhone_number(Long phone_number) {
 		this.phone_number = phone_number;
@@ -237,6 +241,24 @@ public class EmployeeInvite {
 	public void setStatus(String status) {
 		this.status = status;
 	}
+
+	public String getAadhar_pdf() {
+		return aadhar_pdf;
+	}
+
+	public void setAadhar_pdf(String aadhar_pdf) {
+		this.aadhar_pdf = aadhar_pdf;
+	}
+
+	public String getPan_pdf() {
+		return pan_pdf;
+	}
+
+	public void setPan_pdf(String pan_pdf) {
+		this.pan_pdf = pan_pdf;
+	}
+	
+	
 	
 	
 	
