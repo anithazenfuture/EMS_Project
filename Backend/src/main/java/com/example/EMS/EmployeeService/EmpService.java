@@ -1540,7 +1540,7 @@ public class EmpService {
 
             for (int i = 0; i < prevExpLetter.size(); i++) {
 
-                MultipartFile file = expLetter.get(i);
+                MultipartFile file = prevExpLetter.get(i);
 
                 String fileName = saveFile(file, "uploadsPdf");
 
