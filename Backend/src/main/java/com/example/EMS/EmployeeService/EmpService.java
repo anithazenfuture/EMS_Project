@@ -1323,7 +1323,7 @@ public class EmpService {
                     existing.setExperience(new ArrayList<>());
                 }
 
-                existing.getExperience().clear();
+            //    existing.getExperience().clear();
 
                 for (Experience exp : emp.getExperience()) {
 
@@ -1342,7 +1342,7 @@ public class EmpService {
                     existing.setAttendance(new ArrayList<>());
                 }
 
-                existing.getAttendance().clear();
+           //     existing.getAttendance().clear();
 
                 for (Attendance attendance : emp.getAttendance()) {
 
@@ -1361,7 +1361,7 @@ public class EmpService {
                     existing.setLeaveBalance(new ArrayList<>());
                 }
 
-                existing.getLeaveBalance().clear();
+        //        existing.getLeaveBalance().clear();
 
                 for (LeaveBalance leave : emp.getLeaveBalance()) {
 
@@ -1380,7 +1380,7 @@ public class EmpService {
                     existing.setLeaveRequest(new ArrayList<>());
                 }
 
-                existing.getLeaveRequest().clear();
+        //        existing.getLeaveRequest().clear();
 
                 for (LeaveRequest leave : emp.getLeaveRequest()) {
 
