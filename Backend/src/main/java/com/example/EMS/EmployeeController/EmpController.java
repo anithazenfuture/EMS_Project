@@ -162,6 +162,9 @@ public class EmpController {
 
 	        @RequestPart(value = "prevExpLetter", required = false)
 	        List<MultipartFile> prevExpLetter,
+	        
+	        @RequestPart(value="higherCertification", required=false) 
+	        List<MultipartFile> higherCertification,
 
 	        @RequestPart(value = "experienceLetter", required = false)
 	        List<MultipartFile> experienceLetter) {
@@ -179,6 +182,7 @@ public class EmpController {
 	            resume,
 	            offerLetter,
 	            prevExpLetter,
+	            higherCertification,
 	            experienceLetter);
 	}
 	
@@ -220,6 +224,9 @@ public class EmpController {
 
 	        @RequestPart(value = "bankStatement", required = false)
 	        List<MultipartFile> bankStatement,
+	        
+	        @RequestPart(value="higherCertification", required=false) 
+	        List<MultipartFile> higherCertification,
 
 	        @RequestPart(value = "salarySlip", required = false)
 	        List<MultipartFile> salarySlip
@@ -239,6 +246,7 @@ public class EmpController {
 	            prevExpLetter,
 	            experienceLetter,
 	            bankStatement,
+	            higherCertification,
 	            salarySlip
 	    );
 	}
