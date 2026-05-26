@@ -52,7 +52,7 @@ public class InviteLinkService {
 
 //      String inviteLink = "http://zenfuture/onboard?token=" + token;
         String inviteLink =
-                "http://localhost:3000/employeeinvite";
+                "http://localhost:3000/inviteemployee";
 
         try {
             MimeMessage message = mailSender.createMimeMessage();
