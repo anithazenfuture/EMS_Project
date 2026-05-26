@@ -2,7 +2,6 @@ package com.example.EMS.EmployeeService;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,140 +57,349 @@ public class EmployeeInviteService {
 
 
 
-	public ResponseEntity<?> saveEmployee(@RequestPart("empInvite") EmployeeInvite empInvite, 
-			@RequestPart(value= "file", required=false) MultipartFile file,
-			@RequestPart(value= "passbook", required=false) MultipartFile passbook,
-			@RequestPart(value= "education", required= false) MultipartFile education,
-			@RequestPart(value="resume", required= false) MultipartFile resume,
-			@RequestPart(value="offerLetter", required= false) MultipartFile offerLetter,
-			@RequestPart(value="experienceLetter", required= false) List<MultipartFile> experienceLetter){
-		
-		
-		if(empInvite.getEmail()== null) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please enter email address...");
-		}
-		
-		Optional<EmployeeInvite> existingUser =
-		        empInviteRepo.findByEmail(empInvite.getEmail());
+	public ResponseEntity<?> saveEmployee(
 
-		
+	        @RequestPart("empInvite") EmployeeInvite empInvite,
+	        @RequestPart(value = "file", required = false) MultipartFile file,
 
+	        @RequestPart(value = "aadhar", required = false) MultipartFile aadhar,
+	        @RequestPart(value = "pan_card", required = false) MultipartFile pan_card,
 
-		if(existingUser.isPresent()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User already submitted response");
-		    
+	        @RequestPart(value = "higherEducation", required = false)
+	        List<MultipartFile> higherEducation,
 
-		} else {
+	        @RequestPart(value = "bankStatement", required = false)
+	        List<MultipartFile> bankStatement,
 
-			if(file != null && !file.isEmpty()) {
-				try {
-					String fileName = saveFile(file, "onBoardingProfiles");
-					empInvite.setImgFile(fileName);
+	        @RequestPart(value = "salarySlip", required = false)
+	        List<MultipartFile> salarySlip,
 
-				}
-				catch(Exception e) {
-					return ResponseEntity.status(500).body("Image upload failed "+e);
-				}
-			}
-			
-			if(passbook != null && !passbook.isEmpty()) {
-				try {
-					
-					String fileName = saveFile(passbook, "onBoardingProfilesPdf");
-					if(empInvite.getBankDetails() == null) {
-						empInvite.setBankDetails(new BankDetails());
-					}
-					
-					empInvite.getBankDetails().setPassbook_pdf(fileName);
-					
-					
-					
-				}
-				catch(Exception e) {
-					return ResponseEntity.status(500).body("Passbook Pdf upload failed "+e);
-				}
-			}
-			
-			if(education != null && !education.isEmpty()) {
-				try {
-					
-					String fileName = saveFile(education, "onBoardingProfilesPdf");
-					if(empInvite.getEducation() == null) {
-						empInvite.setEducation(new Education());
-					}
-					
-					empInvite.getEducation().setEducation_pdf(fileName);
-					
-				}
-				catch(Exception e) {
-					return ResponseEntity.status(500).body("Educational Pdf upload failed "+e);
-				}
-			}
-			
-			
-			if(resume != null && !resume.isEmpty()) {
-				try {
-					String fileName = saveFile(resume, "onBoardingProfilesPdf");
-					if(empInvite.getProfessional_details() == null) {
-						empInvite.setProfessional_details(new ProfessionalDetails());
-					}
-					
-					empInvite.getProfessional_details().setResume(fileName);
-				}
-				catch(Exception e) {
-					return ResponseEntity.status(500).body("Resume Pdf upload failed "+ e);
-				}
-			}
-			
-			if(offerLetter != null && !offerLetter.isEmpty()) {
-				try {
-					String fileName = saveFile(offerLetter, "onBoardingProfilesPdf");
-					if(empInvite.getProfessional_details() == null) {
-						empInvite.setProfessional_details(new ProfessionalDetails());
-					}
-					
-					empInvite.getProfessional_details().setOffer_letter(fileName);
-				}
-				catch(Exception e) {
-					return ResponseEntity.status(500).body("Offer Letter Pdf upload failed: "+ e);
-				}
-			}
-			
-			if (experienceLetter != null && !experienceLetter.isEmpty()) {
-			    try {
-			        if (empInvite.getExperience() == null) {
-			        	empInvite.setExperience(new ArrayList<>());
-			        }
+	        @RequestPart(value = "passbook", required = false)
+	        MultipartFile passbook,
 
-			        for (int i = 0; i < experienceLetter.size(); i++) {
-			            MultipartFile files = experienceLetter.get(i);
-			            String fileName = saveFile(files, "onBoardingProfilesPdf");
-			            Experience exp;
-			            if (empInvite.getExperience().size() > i) {
-			                exp = empInvite.getExperience().get(i);
-			            } else {
-			                exp = new Experience();
-			                empInvite.getExperience().add(exp);
-			            }
+	        @RequestPart(value = "education", required = false)
+	        MultipartFile education,
 
-			            exp.setExp_letter(fileName);
-			        }
+	        @RequestPart(value = "resume", required = false)
+	        MultipartFile resume,
 
-			    } catch (Exception e) {
-			        return ResponseEntity.status(500).body("Experience upload failed "+e);
-			    }
-			}
-			
-			
-		}
-		
-		empInvite.setStatus("Completed");
-		EmployeeInvite employeeInvite = empInviteRepo.save(empInvite);
-		return ResponseEntity.ok(employeeInvite);
-		
-		
+	        @RequestPart(value = "offerLetter", required = false)
+	        MultipartFile offerLetter,
+
+	        @RequestPart(value = "prevExpLetter", required = false)
+	        List<MultipartFile> prevExpLetter,
+
+	        @RequestPart(value = "experienceLetter", required = false)
+	        List<MultipartFile> experienceLetter) {
+
+	    try {
+
+	        // ================= EMAIL VALIDATION =================
+
+	        if (empInvite.getEmail() == null
+	                || empInvite.getEmail().trim().isEmpty()) {
+
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                    .body("Please enter email address...");
+	        }
+
+	        Optional<EmployeeInvite> existingUser =
+	                empInviteRepo.findByEmail(empInvite.getEmail());
+
+	        if (existingUser.isPresent()) {
+
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                    .body("User already submitted response with email: "+empInvite.getEmail());
+	        }
+
+	        // ================= PROFILE IMAGE =================
+
+	        if (file != null && !file.isEmpty()) {
+
+	            String fileName =
+	                    saveFile(file, "onBoardingProfiles");
+
+	            empInvite.setImgFile(fileName);
+	        }
+
+	        // ================= AADHAR PDF =================
+
+	        if (aadhar != null && !aadhar.isEmpty()) {
+
+	            String fileName =
+	                    saveFile(aadhar, "onBoardingProfilesPdf");
+
+	            empInvite.setAadhar_pdf(fileName);
+	        }
+
+	        // ================= PAN PDF =================
+
+	        if (pan_card != null && !pan_card.isEmpty()) {
+
+	            String fileName =
+	                    saveFile(pan_card, "onBoardingProfilesPdf");
+
+	            empInvite.setPan_pdf(fileName);
+	        }
+
+	        // ================= PASSBOOK PDF =================
+
+	        if (passbook != null && !passbook.isEmpty()) {
+
+	            String fileName =
+	                    saveFile(passbook, "onBoardingProfilesPdf");
+
+	            if (empInvite.getBankDetails() == null) {
+
+	                empInvite.setBankDetails(new BankDetails());
+	            }
+
+	            empInvite.getBankDetails()
+	                    .setPassbook_pdf(fileName);
+	        }
+
+	        // ================= EDUCATION PDF =================
+
+	        if (education != null && !education.isEmpty()) {
+
+	            String fileName =
+	                    saveFile(education, "onBoardingProfilesPdf");
+
+	            if (empInvite.getEducation() == null) {
+
+	                empInvite.setEducation(new Education());
+	            }
+
+	            empInvite.getEducation()
+	                    .setEducation_pdf(fileName);
+	        }
+
+	        // ================= RESUME PDF =================
+
+	        if (resume != null && !resume.isEmpty()) {
+
+	            String fileName =
+	                    saveFile(resume, "onBoardingProfilesPdf");
+
+	            if (empInvite.getProfessional_details() == null) {
+
+	                empInvite.setProfessional_details(
+	                        new ProfessionalDetails());
+	            }
+
+	            empInvite.getProfessional_details()
+	                    .setResume(fileName);
+	        }
+
+	        // ================= OFFER LETTER PDF =================
+
+	        if (offerLetter != null && !offerLetter.isEmpty()) {
+
+	            String fileName =
+	                    saveFile(offerLetter, "onBoardingProfilesPdf");
+
+	            if (empInvite.getProfessional_details() == null) {
+
+	                empInvite.setProfessional_details(
+	                        new ProfessionalDetails());
+	            }
+
+	            empInvite.getProfessional_details()
+	                    .setOffer_letter(fileName);
+	        }
+
+	        // ================= EXPERIENCE LIST INIT =================
+
+	        if (empInvite.getExperience() == null) {
+
+	            empInvite.setExperience(new ArrayList<>());
+	        }
+
+	        // ================= EXPERIENCE LETTER =================
+
+	        if (experienceLetter != null
+	                && !experienceLetter.isEmpty()) {
+
+	            for (int i = 0; i < experienceLetter.size(); i++) {
+
+	                MultipartFile files =
+	                        experienceLetter.get(i);
+
+	                String fileName =
+	                        saveFile(files, "onBoardingProfilesPdf");
+
+	                Experience exp;
+
+	                if (empInvite.getExperience().size() > i) {
+
+	                    exp = empInvite.getExperience().get(i);
+
+	                } else {
+
+	                    exp = new Experience();
+
+	                    empInvite.getExperience().add(exp);
+	                }
+
+	                exp.setExp_letter(fileName);
+	            }
+	        }
+
+	        // ================= PREVIOUS EXPERIENCE LETTER =================
+
+	        if (prevExpLetter != null
+	                && !prevExpLetter.isEmpty()) {
+
+	            for (int i = 0; i < prevExpLetter.size(); i++) {
+
+	                MultipartFile files =
+	                        prevExpLetter.get(i);
+
+	                String fileName =
+	                        saveFile(files, "onBoardingProfilesPdf");
+
+	                Experience exp;
+
+	                if (empInvite.getExperience().size() > i) {
+
+	                    exp = empInvite.getExperience().get(i);
+
+	                } else {
+
+	                    exp = new Experience();
+
+	                    empInvite.getExperience().add(exp);
+	                }
+
+	                exp.setOfferLetter_exp(fileName);
+	            }
+	        }
+
+	        // ================= BANK STATEMENT PDF =================
+
+	        if (bankStatement != null
+	                && !bankStatement.isEmpty()) {
+
+	            for (int i = 0; i < bankStatement.size(); i++) {
+
+	                MultipartFile files =
+	                        bankStatement.get(i);
+
+	                String fileName =
+	                        saveFile(files, "onBoardingProfilesPdf");
+
+	                Experience exp;
+
+	                if (empInvite.getExperience().size() > i) {
+
+	                    exp = empInvite.getExperience().get(i);
+
+	                } else {
+
+	                    exp = new Experience();
+
+	                    empInvite.getExperience().add(exp);
+	                }
+
+	                exp.setBankStatement_pdf(fileName);
+	            }
+	        }
+
+	        // ================= SALARY SLIP PDF =================
+
+	        if (salarySlip != null
+	                && !salarySlip.isEmpty()) {
+
+	            for (int i = 0; i < salarySlip.size(); i++) {
+
+	                MultipartFile files =
+	                        salarySlip.get(i);
+
+	                String fileName =
+	                        saveFile(files, "onBoardingProfilesPdf");
+
+	                Experience exp;
+
+	                if (empInvite.getExperience().size() > i) {
+
+	                    exp = empInvite.getExperience().get(i);
+
+	                } else {
+
+	                    exp = new Experience();
+
+	                    empInvite.getExperience().add(exp);
+	                }
+
+	                exp.setSalarySlip_pdf(fileName);
+	            }
+	        }
+
+	        // ================= HIGHER EDUCATION PDF =================
+
+	        if (higherEducation != null
+	                && !higherEducation.isEmpty()) {
+
+	            if (empInvite.getEducation() == null) {
+
+	                empInvite.setEducation(new Education());
+	            }
+
+	            if (empInvite.getEducation()
+	                    .getHigherEducation() == null) {
+
+	                empInvite.getEducation()
+	                        .setHigherEducation(new ArrayList<>());
+	            }
+
+	            List<HigherEducation> higherEduList =
+	                    empInvite.getEducation()
+	                            .getHigherEducation();
+
+	            for (int i = 0; i < higherEducation.size(); i++) {
+
+	                MultipartFile filePdf =
+	                        higherEducation.get(i);
+
+	                String fileName =
+	                        saveFile(filePdf,
+	                                "onBoardingProfilesPdf");
+
+	                HigherEducation hr;
+
+	                if (higherEduList.size() > i) {
+
+	                    hr = higherEduList.get(i);
+
+	                } else {
+
+	                    hr = new HigherEducation();
+
+	                    higherEduList.add(hr);
+	                }
+
+	                hr.setHigherEducation_pdf(fileName);
+
+	                hr.setEducation(empInvite.getEducation());
+	            }
+	        }
+
+	        // ================= STATUS =================
+
+	        empInvite.setStatus("Completed");
+
+	        EmployeeInvite employeeInvite =
+	                empInviteRepo.save(empInvite);
+
+	        return ResponseEntity.ok(employeeInvite);
+
+	    } catch (Exception e) {
+
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body("Error while saving employee: "
+	                        + e.getMessage());
+	    }
 	}
-	
 	
 	public ResponseEntity<?> getAllForm(){
 		List<EmployeeInvite> lst =  empInviteRepo.findAll();
@@ -385,250 +593,447 @@ public class EmployeeInviteService {
 	}
 	
 	
-	public ResponseEntity<?> convert(List<Long> lst){
-		List<Employee> res = new ArrayList<>();
-		
-		if(lst.size() == 0) {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invite details not found");
-		}
-		
-		try {
-			for(Long n: lst) {
-				
-				Optional<EmployeeInvite> ob = empInviteRepo.findById(n);
-				if(ob.isEmpty()) {
-					ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee invite data with id: "+n+" not found");
-				}
-				
-				EmployeeInvite obj = ob.get();			
-				Employee emp = new Employee();
-				emp.setFirst_name(obj.getFirst_name());
-				emp.setLast_name(obj.getLast_name());
-				emp.setEmail(obj.getEmail());
-				emp.setPhone_number(obj.getPhone_number());
-				emp.setPhone_number(obj.getPhone_number());
-				emp.setDate_of_birth(obj.getDate_of_birth());
-				emp.setMarital_status(obj.getMarital_status());
-				emp.setGender(obj.getGender());
-				emp.setBlood_group(obj.getBlood_group());
-				emp.setState(obj.getState());
-				emp.setPincode(obj.getPincode());
-				emp.setAadhar_number(obj.getAadhar_number());
-				emp.setPan_number(obj.getPan_number());
-				emp.setAddress(obj.getAddress());
-				emp.setImgFile(obj.getImgFile());
-				
-				BankDetails bd = null;
-				if (obj.getBankDetails() != null) {
+	public ResponseEntity<?> convert(List<Long> lst) {
 
-				    bd = new BankDetails();
+	    List<Employee> res = new ArrayList<>();
 
-				    bd.setBankName(obj.getBankDetails().getBankName());
-				    bd.setAccountHolderName(obj.getBankDetails().getAccountHolderName());
-				    bd.setAccountNumber(obj.getBankDetails().getAccountNumber());
-				    bd.setConfirmAccountNumber(obj.getBankDetails().getConfirmAccountNumber());
-				    bd.setBranchName(obj.getBankDetails().getBranchName());
-				    bd.setIfsc_Number(obj.getBankDetails().getIfsc_Number());
-				    bd.setPassbook_pdf(obj.getBankDetails().getPassbook_pdf());
+	    if (lst == null || lst.isEmpty()) {
 
-				    bd.setEmployee(emp);
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body("Invite details not found");
+	    }
 
-				    emp.setBankDetails(bd);
-				}
-				
-				
-				
-				EmployeePayroll payroll = null;
+	    try {
 
-				if (obj.getEmpPayroll() != null) {
+	        for (Long n : lst) {
 
-				    payroll = new EmployeePayroll();
+	            Optional<EmployeeInvite> ob =
+	                    empInviteRepo.findById(n);
 
-				    payroll.setBasicPay(obj.getEmpPayroll().getBasicPay());
-				    payroll.setHRA(obj.getEmpPayroll().getHRA());
-				    payroll.setSpecialAllowance(obj.getEmpPayroll().getSpecialAllowance());
-				    payroll.setLTA(obj.getEmpPayroll().getLTA());
-				    payroll.setPF(obj.getEmpPayroll().getPF());
-				    payroll.setMedicalAllowance(obj.getEmpPayroll().getMedicalAllowance());
-				    payroll.setBonus(obj.getEmpPayroll().getBonus());
-				    payroll.setAnnualCTC(obj.getEmpPayroll().getAnnualCTC());
+	            if (ob.isEmpty()) {
 
-				    payroll.setEmployee(emp);
+	                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                        .body("Employee invite data with id: "
+	                                + n + " not found");
+	            }
 
-				    emp.setEmpPayroll(payroll);
-				}
-				
-				
-				EmergencyContact ec = null;
+	            EmployeeInvite obj = ob.get();
 
-				if (obj.getEmergency_contact() != null) {
+	            Employee emp = new Employee();
 
-				    ec = new EmergencyContact();
+	            // ================= BASIC DETAILS =================
 
-				    ec.setName(obj.getEmergency_contact().getName());
-				    ec.setRelation(obj.getEmergency_contact().getRelation());
-				    ec.setPhone(obj.getEmergency_contact().getPhone());
+	            emp.setFirst_name(obj.getFirst_name());
+	            emp.setLast_name(obj.getLast_name());
+	            emp.setEmail(obj.getEmail());
+	            emp.setPhone_number(obj.getPhone_number());
+	            emp.setDate_of_birth(obj.getDate_of_birth());
+	            emp.setMarital_status(obj.getMarital_status());
+	            emp.setGender(obj.getGender());
+	            emp.setBlood_group(obj.getBlood_group());
+	            emp.setState(obj.getState());
+	            emp.setPincode(obj.getPincode());
+	            emp.setAadhar_number(obj.getAadhar_number());
+	            emp.setPan_number(obj.getPan_number());
+	            emp.setAddress(obj.getAddress());
 
-				    ec.setEmployee(emp);
+	            emp.setImgFile(obj.getImgFile());
 
-				    emp.setEmergency_contact(ec);
-				}
-				
-				Education edu = null;
+	            // Missing PDFs
+	            emp.setAadhar_pdf(obj.getAadhar_pdf());
+	            emp.setPan_pdf(obj.getPan_pdf());
 
-				if (obj.getEducation() != null) {
+	            // ================= BANK DETAILS =================
 
-				    edu = new Education();
+	            if (obj.getBankDetails() != null) {
 
-				    edu.setEducationLevel(obj.getEducation().getEducationLevel());
-				    edu.setEducationalBoard(obj.getEducation().getEducationalBoard());
-				    edu.setSchoolName(obj.getEducation().getSchoolName());
-				    edu.setPlace(obj.getEducation().getPlace());
-				    edu.setEducationalGroup(obj.getEducation().getEducationalGroup());
-				    edu.setSchool_from(obj.getEducation().getSchool_from());
-				    edu.setSchool_to(obj.getEducation().getSchool_to());
-				    edu.setSchool_percentage(obj.getEducation().getSchool_percentage());
-				    edu.setEducation_pdf(obj.getEducation().getEducation_pdf());
+	                BankDetails bd = new BankDetails();
 
-				    edu.setEmployee(emp);
+	                bd.setBankName(
+	                        obj.getBankDetails().getBankName());
 
-				    // Higher Education
-				    List<HigherEducation> higherList = new ArrayList<>();
+	                bd.setAccountHolderName(
+	                        obj.getBankDetails()
+	                                .getAccountHolderName());
 
-				    if (obj.getEducation().getHigherEducation() != null) {
+	                bd.setAccountNumber(
+	                        obj.getBankDetails()
+	                                .getAccountNumber());
 
-				        for (HigherEducation oldHe : obj.getEducation().getHigherEducation()) {
+	                bd.setConfirmAccountNumber(
+	                        obj.getBankDetails()
+	                                .getConfirmAccountNumber());
 
-				            HigherEducation he = new HigherEducation();
+	                bd.setBranchName(
+	                        obj.getBankDetails().getBranchName());
 
-				            he.setDegree(oldHe.getDegree());
-				            he.setInstituition(oldHe.getInstituition());
-				            he.setSpecialization(oldHe.getSpecialization());
-				            he.setDegree_from(oldHe.getDegree_from());
-				            he.setDegree_to(oldHe.getDegree_to());
-				            he.setPercentage(oldHe.getPercentage());
-				            he.setCertification(oldHe.getCertification());
-				            he.setCourseType(oldHe.getCourseType());
-				            higherList.add(he);
-				        }
-				    }
+	                bd.setIfsc_Number(
+	                        obj.getBankDetails().getIfsc_Number());
 
-				    edu.setHigherEducation(higherList);
+	                bd.setPassbook_pdf(
+	                        obj.getBankDetails().getPassbook_pdf());
 
-				    emp.setEducation(edu);
-				}
-				
-				ProfessionalDetails pd = null;
+	                bd.setEmployee(emp);
 
-				if (obj.getProfessional_details() != null) {
+	                emp.setBankDetails(bd);
+	            }
 
-				    pd = new ProfessionalDetails();
+	            // ================= PAYROLL =================
 
-				    pd.setProfessional_designation(
-				        obj.getProfessional_details().getProfessional_designation());
+	            if (obj.getEmpPayroll() != null) {
 
-				    pd.setProfessional_department(
-				        obj.getProfessional_details().getProfessional_department());
+	                EmployeePayroll payroll =
+	                        new EmployeePayroll();
 
-				    pd.setEmp_type(
-				        obj.getProfessional_details().getEmp_type());
+	                payroll.setBasicPay(
+	                        obj.getEmpPayroll().getBasicPay());
 
-				    pd.setLocation(
-				        obj.getProfessional_details().getLocation());
+	                payroll.setHRA(
+	                        obj.getEmpPayroll().getHRA());
 
-				    pd.setEmp_status(
-				        obj.getProfessional_details().getEmp_status());
+	                payroll.setSpecialAllowance(
+	                        obj.getEmpPayroll()
+	                                .getSpecialAllowance());
 
-				    pd.setDoj(
-				        obj.getProfessional_details().getDoj());
+	                payroll.setLTA(
+	                        obj.getEmpPayroll().getLTA());
 
-				    pd.setProbation_period(
-				        obj.getProfessional_details().getProbation_period());
+	                payroll.setPF(
+	                        obj.getEmpPayroll().getPF());
 
-				    pd.setConfirmation_date(
-				        obj.getProfessional_details().getConfirmation_date());
+	                payroll.setMedicalAllowance(
+	                        obj.getEmpPayroll()
+	                                .getMedicalAllowance());
 
-				    pd.setSkills(
-				        obj.getProfessional_details().getSkills());
+	                payroll.setBonus(
+	                        obj.getEmpPayroll().getBonus());
 
-				    pd.setExp_level(
-				        obj.getProfessional_details().getExp_level());
+	                payroll.setAnnualCTC(
+	                        obj.getEmpPayroll().getAnnualCTC());
 
-				    pd.setResume(
-				        obj.getProfessional_details().getResume());
+	                payroll.setEmployee(emp);
 
-				    pd.setOffer_letter(
-				        obj.getProfessional_details().getOffer_letter());
+	                emp.setEmpPayroll(payroll);
+	            }
 
-				    pd.setEmployee(emp);
+	            // ================= EMERGENCY CONTACT =================
 
-				    emp.setProfessional_details(pd);
-				}
-				
-				List<Experience> expList = new ArrayList<>();
+	            if (obj.getEmergency_contact() != null) {
 
-				if (obj.getExperience() != null) {
+	                EmergencyContact ec =
+	                        new EmergencyContact();
 
-				    for (Experience oldExp : obj.getExperience()) {
+	                ec.setName(
+	                        obj.getEmergency_contact().getName());
 
-				        Experience exp = new Experience();
+	                ec.setRelation(
+	                        obj.getEmergency_contact()
+	                                .getRelation());
 
-				        exp.setCompany_name(oldExp.getCompany_name());
-				        exp.setJob_title(oldExp.getJob_title());
-				        exp.setEmp_type_prev(oldExp.getEmp_type_prev());
-				        exp.setEmp_start(oldExp.getEmp_start());
-				        exp.setEmp_end(oldExp.getEmp_end());
-				        exp.setCurrently_working(oldExp.getCurrently_working());
-				        exp.setDuration(oldExp.getDuration());
-				        exp.setTech_used(oldExp.getTech_used());
-				        exp.setRoles_responsibilities(
-				            oldExp.getRoles_responsibilities());
+	                ec.setPhone(
+	                        obj.getEmergency_contact().getPhone());
 
-				        exp.setExp_letter(oldExp.getExp_letter());
+	                ec.setEmployee(emp);
 
-				        exp.setEmployee(emp);
+	                emp.setEmergency_contact(ec);
+	            }
 
-				        expList.add(exp);
-				    }
-				}
+	            // ================= EDUCATION =================
 
-				emp.setExperience(expList);
-				
-				Long maxId = empRepo.findMaxId();
-				String detail =  emp.getProfessional_details().getEmp_type();
-				String type = detail.substring(0, 1).toUpperCase(); 
-				long nextId = (maxId == null) ? 1 : maxId + 1;
-				emp.setEmployeeId(String.format("ZF%s-%03d", type, nextId));
-			    
-				ResponseEntity<?> response = empService.createUser(emp);
-				System.out.println(response);
-				empInviteRepo.deleteById(obj.getId());
-				res.add(emp);
-			}
-		}
-		catch(Exception e) {
-			System.out.println("Exception: "+e);
-		}
-		
-		
-		return ResponseEntity.ok(res);
-		
-		
-		
-		
-		
+	            if (obj.getEducation() != null) {
+
+	                Education edu = new Education();
+
+	                edu.setEducationLevel(
+	                        obj.getEducation()
+	                                .getEducationLevel());
+
+	                edu.setEducationalBoard(
+	                        obj.getEducation()
+	                                .getEducationalBoard());
+
+	                edu.setSchoolName(
+	                        obj.getEducation()
+	                                .getSchoolName());
+
+	                edu.setPlace(
+	                        obj.getEducation().getPlace());
+
+	                edu.setEducationalGroup(
+	                        obj.getEducation()
+	                                .getEducationalGroup());
+
+	                edu.setSchool_from(
+	                        obj.getEducation()
+	                                .getSchool_from());
+
+	                edu.setSchool_to(
+	                        obj.getEducation()
+	                                .getSchool_to());
+
+	                edu.setSchool_percentage(
+	                        obj.getEducation()
+	                                .getSchool_percentage());
+
+	                edu.setEducation_pdf(
+	                        obj.getEducation()
+	                                .getEducation_pdf());
+
+	                edu.setEmployee(emp);
+
+	                // ================= HIGHER EDUCATION =================
+
+	                List<HigherEducation> higherList =
+	                        new ArrayList<>();
+
+	                if (obj.getEducation()
+	                        .getHigherEducation() != null) {
+
+	                    for (HigherEducation oldHe :
+	                            obj.getEducation()
+	                                    .getHigherEducation()) {
+
+	                        HigherEducation he =
+	                                new HigherEducation();
+
+	                        he.setDegree(oldHe.getDegree());
+
+	                        he.setInstituition(
+	                                oldHe.getInstituition());
+
+	                        he.setSpecialization(
+	                                oldHe.getSpecialization());
+
+	                        he.setDegree_from(
+	                                oldHe.getDegree_from());
+
+	                        he.setDegree_to(
+	                                oldHe.getDegree_to());
+
+	                        he.setPercentage(
+	                                oldHe.getPercentage());
+
+	                        he.setCertification(
+	                                oldHe.getCertification());
+
+	                        he.setCourseType(
+	                                oldHe.getCourseType());
+
+	                        // Missing PDF
+	                        he.setHigherEducation_pdf(
+	                                oldHe.getHigherEducation_pdf());
+
+	                        // Relationship
+	                        he.setEducation(edu);
+
+	                        higherList.add(he);
+	                    }
+	                }
+
+	                edu.setHigherEducation(higherList);
+
+	                emp.setEducation(edu);
+	            }
+
+	            // ================= PROFESSIONAL DETAILS =================
+
+	            if (obj.getProfessional_details() != null) {
+
+	                ProfessionalDetails pd =
+	                        new ProfessionalDetails();
+
+	                pd.setProfessional_designation(
+	                        obj.getProfessional_details()
+	                                .getProfessional_designation());
+
+	                pd.setProfessional_department(
+	                        obj.getProfessional_details()
+	                                .getProfessional_department());
+
+	                pd.setEmp_type(
+	                        obj.getProfessional_details()
+	                                .getEmp_type());
+
+	                pd.setLocation(
+	                        obj.getProfessional_details()
+	                                .getLocation());
+
+	                pd.setEmp_status(
+	                        obj.getProfessional_details()
+	                                .getEmp_status());
+
+	                pd.setDoj(
+	                        obj.getProfessional_details()
+	                                .getDoj());
+
+	                pd.setProbation_period(
+	                        obj.getProfessional_details()
+	                                .getProbation_period());
+
+	                pd.setConfirmation_date(
+	                        obj.getProfessional_details()
+	                                .getConfirmation_date());
+
+	                pd.setSkills(
+	                        obj.getProfessional_details()
+	                                .getSkills());
+
+	                pd.setExp_level(
+	                        obj.getProfessional_details()
+	                                .getExp_level());
+
+	                pd.setResume(
+	                        obj.getProfessional_details()
+	                                .getResume());
+
+	                pd.setOffer_letter(
+	                        obj.getProfessional_details()
+	                                .getOffer_letter());
+
+	                pd.setEmployee(emp);
+
+	                emp.setProfessional_details(pd);
+	            }
+
+	            // ================= EXPERIENCE =================
+
+	            List<Experience> expList =
+	                    new ArrayList<>();
+
+	            if (obj.getExperience() != null) {
+
+	                for (Experience oldExp :
+	                        obj.getExperience()) {
+
+	                    Experience exp =
+	                            new Experience();
+
+	                    exp.setCompany_name(
+	                            oldExp.getCompany_name());
+
+	                    exp.setJob_title(
+	                            oldExp.getJob_title());
+
+	                    exp.setEmp_type_prev(
+	                            oldExp.getEmp_type_prev());
+
+	                    exp.setEmp_start(
+	                            oldExp.getEmp_start());
+
+	                    exp.setEmp_end(
+	                            oldExp.getEmp_end());
+
+	                    exp.setCurrently_working(
+	                            oldExp.getCurrently_working());
+
+	                    exp.setDuration(
+	                            oldExp.getDuration());
+
+	                    exp.setTech_used(
+	                            oldExp.getTech_used());
+
+	                    exp.setRoles_responsibilities(
+	                            oldExp.getRoles_responsibilities());
+
+	                    // Missing PDFs
+	                    exp.setExp_letter(
+	                            oldExp.getExp_letter());
+
+	                    exp.setOfferLetter_exp(
+	                            oldExp.getOfferLetter_exp());
+
+	                    exp.setBankStatement_pdf(
+	                            oldExp.getBankStatement_pdf());
+
+	                    exp.setSalarySlip_pdf(
+	                            oldExp.getSalarySlip_pdf());
+
+	                    exp.setEmployee(emp);
+
+	                    expList.add(exp);
+	                }
+	            }
+
+	            emp.setExperience(expList);
+
+	            // ================= EMPLOYEE ID =================
+
+	            Long maxId = empRepo.findMaxId();
+
+	            String type = "E";
+
+	            if (emp.getProfessional_details() != null
+	                    && emp.getProfessional_details()
+	                    .getEmp_type() != null) {
+
+	                type = emp.getProfessional_details()
+	                        .getEmp_type()
+	                        .substring(0, 1)
+	                        .toUpperCase();
+	            }
+
+	            long nextId =
+	                    (maxId == null) ? 1 : maxId + 1;
+
+	            emp.setEmployeeId(
+	                    String.format("ZF%s-%03d",
+	                            type,
+	                            nextId));
+
+	            // ================= SAVE =================
+
+	            ResponseEntity<?> response =
+	                    empService.createUser(emp);
+
+	            System.out.println(response);
+
+	            empInviteRepo.deleteById(obj.getId());
+
+	            res.add(emp);
+	        }
+
+	    } catch (Exception e) {
+
+	        e.printStackTrace();
+
+	        return ResponseEntity.status(
+	                        HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body("Error while converting employee: "
+	                        + e.getMessage());
+	    }
+
+	    return ResponseEntity.ok(res);
 	}
 	
 	
 	public ResponseEntity<?> convertByOne(Long id) {
-		
-		Optional<EmployeeInvite> obj1 = empInviteRepo.findById(id);
-		if(obj1.isEmpty()) {
-			ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee invite data with id: "+id+" not found");
-		}
-		EmployeeInvite obj = obj1.get();
+
+	    Optional<EmployeeInvite> obj1 =
+	            empInviteRepo.findById(id);
+
+	    if (obj1.isEmpty()) {
+
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                .body("Employee invite data with id: "
+	                        + id + " not found");
+	    }
+
+	    EmployeeInvite obj = obj1.get();
 
 	    try {
+
+	        // =========================
+	        // CHECK EXISTING EMPLOYEE
+	        // =========================
+
+	        Optional<Employee> existingEmp =
+	                empRepo.findByEmail(obj.getEmail());
+
+	        if (existingEmp.isPresent()) {
+
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+	                    .body("Employee already exists");
+	        }
 
 	        Employee emp = new Employee();
 
@@ -639,7 +1044,6 @@ public class EmployeeInviteService {
 	        emp.setFirst_name(obj.getFirst_name());
 	        emp.setLast_name(obj.getLast_name());
 	        emp.setEmail(obj.getEmail());
-	        System.out.println(obj.getEmail());
 	        emp.setPhone_number(obj.getPhone_number());
 	        emp.setDate_of_birth(obj.getDate_of_birth());
 	        emp.setMarital_status(obj.getMarital_status());
@@ -650,7 +1054,15 @@ public class EmployeeInviteService {
 	        emp.setAadhar_number(obj.getAadhar_number());
 	        emp.setPan_number(obj.getPan_number());
 	        emp.setAddress(obj.getAddress());
+	   
+
+	        // =========================
+	        // FILES
+	        // =========================
+
 	        emp.setImgFile(obj.getImgFile());
+	        emp.setAadhar_pdf(obj.getAadhar_pdf());
+	        emp.setPan_pdf(obj.getPan_pdf());
 
 	        // =========================
 	        // BANK DETAILS
@@ -660,13 +1072,32 @@ public class EmployeeInviteService {
 
 	            BankDetails bd = new BankDetails();
 
-	            bd.setBankName(obj.getBankDetails().getBankName());
-	            bd.setAccountHolderName(obj.getBankDetails().getAccountHolderName());
-	            bd.setAccountNumber(obj.getBankDetails().getAccountNumber());
-	            bd.setConfirmAccountNumber(obj.getBankDetails().getConfirmAccountNumber());
-	            bd.setBranchName(obj.getBankDetails().getBranchName());
-	            bd.setIfsc_Number(obj.getBankDetails().getIfsc_Number());
-	            bd.setPassbook_pdf(obj.getBankDetails().getPassbook_pdf());
+	            bd.setBankName(
+	                    obj.getBankDetails().getBankName());
+
+	            bd.setAccountHolderName(
+	                    obj.getBankDetails()
+	                            .getAccountHolderName());
+
+	            bd.setAccountNumber(
+	                    obj.getBankDetails()
+	                            .getAccountNumber());
+
+	            bd.setConfirmAccountNumber(
+	                    obj.getBankDetails()
+	                            .getConfirmAccountNumber());
+
+	            bd.setBranchName(
+	                    obj.getBankDetails()
+	                            .getBranchName());
+
+	            bd.setIfsc_Number(
+	                    obj.getBankDetails()
+	                            .getIfsc_Number());
+
+	            bd.setPassbook_pdf(
+	                    obj.getBankDetails()
+	                            .getPassbook_pdf());
 
 	            bd.setEmployee(emp);
 
@@ -679,16 +1110,35 @@ public class EmployeeInviteService {
 
 	        if (obj.getEmpPayroll() != null) {
 
-	            EmployeePayroll payroll = new EmployeePayroll();
+	            EmployeePayroll payroll =
+	                    new EmployeePayroll();
 
-	            payroll.setBasicPay(obj.getEmpPayroll().getBasicPay());
-	            payroll.setHRA(obj.getEmpPayroll().getHRA());
-	            payroll.setSpecialAllowance(obj.getEmpPayroll().getSpecialAllowance());
-	            payroll.setLTA(obj.getEmpPayroll().getLTA());
-	            payroll.setPF(obj.getEmpPayroll().getPF());
-	            payroll.setMedicalAllowance(obj.getEmpPayroll().getMedicalAllowance());
-	            payroll.setBonus(obj.getEmpPayroll().getBonus());
-	            payroll.setAnnualCTC(obj.getEmpPayroll().getAnnualCTC());
+	            payroll.setBasicPay(
+	                    obj.getEmpPayroll().getBasicPay());
+
+	            payroll.setHRA(
+	                    obj.getEmpPayroll().getHRA());
+
+	            payroll.setSpecialAllowance(
+	                    obj.getEmpPayroll()
+	                            .getSpecialAllowance());
+
+	            payroll.setLTA(
+	                    obj.getEmpPayroll().getLTA());
+
+	            payroll.setPF(
+	                    obj.getEmpPayroll().getPF());
+
+	            payroll.setMedicalAllowance(
+	                    obj.getEmpPayroll()
+	                            .getMedicalAllowance());
+
+	            payroll.setBonus(
+	                    obj.getEmpPayroll().getBonus());
+
+	            payroll.setAnnualCTC(
+	                    obj.getEmpPayroll()
+	                            .getAnnualCTC());
 
 	            payroll.setEmployee(emp);
 
@@ -701,11 +1151,20 @@ public class EmployeeInviteService {
 
 	        if (obj.getEmergency_contact() != null) {
 
-	            EmergencyContact ec = new EmergencyContact();
+	            EmergencyContact ec =
+	                    new EmergencyContact();
 
-	            ec.setName(obj.getEmergency_contact().getName());
-	            ec.setRelation(obj.getEmergency_contact().getRelation());
-	            ec.setPhone(obj.getEmergency_contact().getPhone());
+	            ec.setName(
+	                    obj.getEmergency_contact()
+	                            .getName());
+
+	            ec.setRelation(
+	                    obj.getEmergency_contact()
+	                            .getRelation());
+
+	            ec.setPhone(
+	                    obj.getEmergency_contact()
+	                            .getPhone());
 
 	            ec.setEmployee(emp);
 
@@ -720,15 +1179,41 @@ public class EmployeeInviteService {
 
 	            Education edu = new Education();
 
-	            edu.setEducationLevel(obj.getEducation().getEducationLevel());
-	            edu.setEducationalBoard(obj.getEducation().getEducationalBoard());
-	            edu.setSchoolName(obj.getEducation().getSchoolName());
-	            edu.setPlace(obj.getEducation().getPlace());
-	            edu.setEducationalGroup(obj.getEducation().getEducationalGroup());
-	            edu.setSchool_from(obj.getEducation().getSchool_from());
-	            edu.setSchool_to(obj.getEducation().getSchool_to());
-	            edu.setSchool_percentage(obj.getEducation().getSchool_percentage());
-	            edu.setEducation_pdf(obj.getEducation().getEducation_pdf());
+	            edu.setEducationLevel(
+	                    obj.getEducation()
+	                            .getEducationLevel());
+
+	            edu.setEducationalBoard(
+	                    obj.getEducation()
+	                            .getEducationalBoard());
+
+	            edu.setSchoolName(
+	                    obj.getEducation()
+	                            .getSchoolName());
+
+	            edu.setPlace(
+	                    obj.getEducation()
+	                            .getPlace());
+
+	            edu.setEducationalGroup(
+	                    obj.getEducation()
+	                            .getEducationalGroup());
+
+	            edu.setSchool_from(
+	                    obj.getEducation()
+	                            .getSchool_from());
+
+	            edu.setSchool_to(
+	                    obj.getEducation()
+	                            .getSchool_to());
+
+	            edu.setSchool_percentage(
+	                    obj.getEducation()
+	                            .getSchool_percentage());
+
+	            edu.setEducation_pdf(
+	                    obj.getEducation()
+	                            .getEducation_pdf());
 
 	            edu.setEmployee(emp);
 
@@ -736,24 +1221,46 @@ public class EmployeeInviteService {
 	            // HIGHER EDUCATION
 	            // =========================
 
-	            List<HigherEducation> higherList = new ArrayList<>();
+	            List<HigherEducation> higherList =
+	                    new ArrayList<>();
 
-	            if (obj.getEducation().getHigherEducation() != null) {
+	            if (obj.getEducation()
+	                    .getHigherEducation() != null) {
 
-	                for (HigherEducation oldHe : obj.getEducation().getHigherEducation()) {
+	                for (HigherEducation oldHe :
+	                        obj.getEducation()
+	                                .getHigherEducation()) {
 
-	                    HigherEducation he = new HigherEducation();
+	                    HigherEducation he =
+	                            new HigherEducation();
 
 	                    he.setDegree(oldHe.getDegree());
-	                    he.setInstituition(oldHe.getInstituition());
-	                    he.setSpecialization(oldHe.getSpecialization());
-	                    he.setDegree_from(oldHe.getDegree_from());
-	                    he.setDegree_to(oldHe.getDegree_to());
-	                    he.setPercentage(oldHe.getPercentage());
-	                    he.setCertification(oldHe.getCertification());
-	                    he.setCourseType(oldHe.getCourseType());
 
-	                  
+	                    he.setInstituition(
+	                            oldHe.getInstituition());
+
+	                    he.setSpecialization(
+	                            oldHe.getSpecialization());
+
+	                    he.setDegree_from(
+	                            oldHe.getDegree_from());
+
+	                    he.setDegree_to(
+	                            oldHe.getDegree_to());
+
+	                    he.setPercentage(
+	                            oldHe.getPercentage());
+
+	                    he.setCertification(
+	                            oldHe.getCertification());
+
+	                    he.setCourseType(
+	                            oldHe.getCourseType());
+
+	                    he.setHigherEducation_pdf(
+	                            oldHe.getHigherEducation_pdf());
+
+	                    he.setEducation(edu);
 
 	                    higherList.add(he);
 	                }
@@ -770,89 +1277,115 @@ public class EmployeeInviteService {
 
 	        if (obj.getProfessional_details() != null) {
 
-	            ProfessionalDetails pd = new ProfessionalDetails();
+	            ProfessionalDetails pd =
+	                    new ProfessionalDetails();
 
 	            pd.setProfessional_designation(
-	                    obj.getProfessional_details().getProfessional_designation());
+	                    obj.getProfessional_details()
+	                            .getProfessional_designation());
 
 	            pd.setProfessional_department(
-	                    obj.getProfessional_details().getProfessional_department());
+	                    obj.getProfessional_details()
+	                            .getProfessional_department());
 
 	            pd.setEmp_type(
-	                    obj.getProfessional_details().getEmp_type());
+	                    obj.getProfessional_details()
+	                            .getEmp_type());
 
 	            pd.setLocation(
-	                    obj.getProfessional_details().getLocation());
+	                    obj.getProfessional_details()
+	                            .getLocation());
 
 	            pd.setEmp_status(
-	                    obj.getProfessional_details().getEmp_status());
+	                    obj.getProfessional_details()
+	                            .getEmp_status());
 
 	            pd.setDoj(
-	                    obj.getProfessional_details().getDoj());
+	                    obj.getProfessional_details()
+	                            .getDoj());
 
 	            pd.setProbation_period(
-	                    obj.getProfessional_details().getProbation_period());
+	                    obj.getProfessional_details()
+	                            .getProbation_period());
 
 	            pd.setConfirmation_date(
-	                    obj.getProfessional_details().getConfirmation_date());
+	                    obj.getProfessional_details()
+	                            .getConfirmation_date());
 
 	            pd.setSkills(
-	                    obj.getProfessional_details().getSkills());
+	                    obj.getProfessional_details()
+	                            .getSkills());
 
 	            pd.setExp_level(
-	                    obj.getProfessional_details().getExp_level());
+	                    obj.getProfessional_details()
+	                            .getExp_level());
 
 	            pd.setResume(
-	                    obj.getProfessional_details().getResume());
+	                    obj.getProfessional_details()
+	                            .getResume());
 
 	            pd.setOffer_letter(
-	                    obj.getProfessional_details().getOffer_letter());
+	                    obj.getProfessional_details()
+	                            .getOffer_letter());
 
 	            pd.setEmployee(emp);
-	            
-	            
 
 	            emp.setProfessional_details(pd);
-	            
-	         // =========================
-		        // EMPLOYEE ID GENERATION
-		        // =========================
-
-		        Long maxId = empRepo.findMaxId();
-
-		        String detail = emp.getProfessional_details().getEmp_type();
-
-		        String type = detail.substring(0, 1).toUpperCase();
-
-		        long nextId = (maxId == null) ? 1 : maxId + 1;
-
-		        emp.setEmployeeId(String.format("ZF%s-%03d", type, nextId));
 	        }
 
 	        // =========================
 	        // EXPERIENCE
 	        // =========================
 
-	        List<Experience> expList = new ArrayList<>();
+	        List<Experience> expList =
+	                new ArrayList<>();
 
 	        if (obj.getExperience() != null) {
 
-	            for (Experience oldExp : obj.getExperience()) {
+	            for (Experience oldExp :
+	                    obj.getExperience()) {
 
-	                Experience exp = new Experience();
+	                Experience exp =
+	                        new Experience();
 
-	                exp.setCompany_name(oldExp.getCompany_name());
-	                exp.setJob_title(oldExp.getJob_title());
-	                exp.setEmp_type_prev(oldExp.getEmp_type_prev());
-	                exp.setEmp_start(oldExp.getEmp_start());
-	                exp.setEmp_end(oldExp.getEmp_end());
-	                exp.setCurrently_working(oldExp.getCurrently_working());
-	                exp.setDuration(oldExp.getDuration());
-	                exp.setTech_used(oldExp.getTech_used());
+	                exp.setCompany_name(
+	                        oldExp.getCompany_name());
+
+	                exp.setJob_title(
+	                        oldExp.getJob_title());
+
+	                exp.setEmp_type_prev(
+	                        oldExp.getEmp_type_prev());
+
+	                exp.setEmp_start(
+	                        oldExp.getEmp_start());
+
+	                exp.setEmp_end(
+	                        oldExp.getEmp_end());
+
+	                exp.setCurrently_working(
+	                        oldExp.getCurrently_working());
+
+	                exp.setDuration(
+	                        oldExp.getDuration());
+
+	                exp.setTech_used(
+	                        oldExp.getTech_used());
+
 	                exp.setRoles_responsibilities(
 	                        oldExp.getRoles_responsibilities());
 
-	                exp.setExp_letter(oldExp.getExp_letter());
+	                exp.setExp_letter(
+	                        oldExp.getExp_letter());
+
+	                exp.setOfferLetter_exp(
+	                        oldExp.getOfferLetter_exp());
+
+	                exp.setBankStatement_pdf(
+	                        oldExp.getBankStatement_pdf());
+
+	                exp.setSalarySlip_pdf(
+	                        oldExp.getSalarySlip_pdf());
 
 	                exp.setEmployee(emp);
 
@@ -862,19 +1395,48 @@ public class EmployeeInviteService {
 
 	        emp.setExperience(expList);
 
-	       
+	        // =========================
+	        // EMPLOYEE ID GENERATION
+	        // =========================
+
+	        Long maxId = empRepo.findMaxId();
+
+	        String type = "E";
+
+	        if (emp.getProfessional_details() != null
+	                && emp.getProfessional_details()
+	                .getEmp_type() != null
+	                && !emp.getProfessional_details()
+	                .getEmp_type()
+	                .isBlank()) {
+
+	            type = emp.getProfessional_details()
+	                    .getEmp_type()
+	                    .substring(0, 1)
+	                    .toUpperCase();
+	        }
+
+	        long nextId =
+	                (maxId == null) ? 1 : maxId + 1;
+
+	        emp.setEmployeeId(
+	                String.format("ZF%s-%03d",
+	                        type,
+	                        nextId));
 
 	        // =========================
 	        // SAVE EMPLOYEE
 	        // =========================
 
-	        ResponseEntity<?> response = empService.createUser(emp);
+	        Employee savedEmp = empRepo.save(emp);
 
-	        if (response.getStatusCode().is2xxSuccessful()) {
-	        	 empInviteRepo.deleteById(obj.getId());    
-	      }
+	        // =========================
+	        // DELETE INVITE
+	        // =========================
 
-	        return response;
+	        empInviteRepo.deleteById(obj.getId());
+
+	        return ResponseEntity.ok(savedEmp);
 
 	    } catch (Exception e) {
 
@@ -882,9 +1444,9 @@ public class EmployeeInviteService {
 
 	        return ResponseEntity
 	                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body("Conversion Failed: " + e.getMessage());
+	                .body("Conversion Failed: "
+	                        + e.getMessage());
 	    }
 	}
-	
 	
 }
