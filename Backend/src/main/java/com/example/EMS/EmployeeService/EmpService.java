@@ -92,6 +92,7 @@ public class EmpService {
 			@RequestPart(value="resume", required= false) MultipartFile resume,
 			@RequestPart(value="offerLetter", required= false) MultipartFile offerLetter,
 			@RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
+			@RequestPart(value="higherCertification", required=false) List<MultipartFile> higherCertification,
 			@RequestPart(value="experienceLetter", required= false) List<MultipartFile> experienceLetter){
 		
 		Optional<Employee> empId = empRepo.findByEmployeeId(emp.getEmployeeId());
@@ -185,7 +186,6 @@ public class EmpService {
 		
 		if(higherEducation != null && !higherEducation.isEmpty() ) {
 			try {
-				System.out.println("heree");
 				if(emp.getEducation().getHigherEducation() == null) {
 					emp.getEducation().setHigherEducation(new ArrayList<HigherEducation>());
 				}
@@ -194,7 +194,12 @@ public class EmpService {
 					HigherEducation hr = emp.getEducation().getHigherEducation().get(i);
 					String fileName1 = saveFile(higherEducation.get(i), "uploadsPdf");
 					hr.setHigherEducation_pdf(fileName1);
+					if(higherCertification.size() > i) {
+						String fileName = saveFile(higherCertification.get(i), "uploadsPdf");
+						hr.setCertification(fileName);
+					}
 				}
+				
 			}
 			catch(Exception e) {
 				return ResponseEntity.status(500).body("Higher Educational Pdf upload failed "+e);
@@ -1024,13 +1029,13 @@ public class EmpService {
             List<MultipartFile> prevExpLetter,
             List<MultipartFile> bankStatement,
             List<MultipartFile> salarySlip,
+            List<MultipartFile> higherCertification,
 
             MultipartFile passbookPdf,
             MultipartFile educationPdf,
 
             MultipartFile resume,
             MultipartFile offerLetter,
-
             List<MultipartFile> expLetter
 
     ) throws Exception {
@@ -1489,6 +1494,10 @@ public class EmpService {
                     if (higherEduList.size() > i) {
 
                         HigherEducation hr = higherEduList.get(i);
+                        if(higherCertification.size() > i) {
+    						String fileName1 = saveFile(higherCertification.get(i), "uploadsPdf");
+    						hr.setCertification(fileName1);
+    					}
 
                         hr.setHigherEducation_pdf(fileName);
 

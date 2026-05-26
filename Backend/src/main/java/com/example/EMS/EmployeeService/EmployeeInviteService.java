@@ -64,7 +64,6 @@ public class EmployeeInviteService {
 
 	        @RequestPart(value = "aadhar", required = false) MultipartFile aadhar,
 	        @RequestPart(value = "pan_card", required = false) MultipartFile pan_card,
-
 	        @RequestPart(value = "higherEducation", required = false)
 	        List<MultipartFile> higherEducation,
 
@@ -88,7 +87,10 @@ public class EmployeeInviteService {
 
 	        @RequestPart(value = "prevExpLetter", required = false)
 	        List<MultipartFile> prevExpLetter,
-
+	        
+	        @RequestPart(value="higherCertification", required=false) 
+	        List<MultipartFile> higherCertification,
+	        
 	        @RequestPart(value = "experienceLetter", required = false)
 	        List<MultipartFile> experienceLetter) {
 
@@ -377,6 +379,10 @@ public class EmployeeInviteService {
 
 	                    higherEduList.add(hr);
 	                }
+	                if(higherCertification.size() > i) {
+						String fileName1 = saveFile(higherCertification.get(i), "uploadsPdf");
+						hr.setCertification(fileName1);
+					}
 
 	                hr.setHigherEducation_pdf(fileName);
 
@@ -430,7 +436,28 @@ public class EmployeeInviteService {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Data with id: "+id+" not found");
 	}
 	
-	public ResponseEntity<?> updateFormById(Long id,EmployeeInvite empInvite, MultipartFile file, MultipartFile passbook,MultipartFile education, MultipartFile resume, MultipartFile offerLetter, List<MultipartFile> experienceLetter) throws Exception{
+	public ResponseEntity<?> updateFormById(
+	        Long id,
+	        EmployeeInvite empInvite,
+
+	        MultipartFile file,
+
+	        MultipartFile aadhar,
+	        MultipartFile pan_card,
+
+	        List<MultipartFile> higherEducation,
+	        List<MultipartFile> bankStatement,
+	        List<MultipartFile> salarySlip,
+
+	        MultipartFile passbook,
+	        MultipartFile education,
+	        MultipartFile resume,
+	        MultipartFile offerLetter,
+
+	        List<MultipartFile> prevExpLetter,
+	        List<MultipartFile> higherCertification,
+	        List<MultipartFile> experienceLetter
+	) throws Exception{
 		Optional<EmployeeInvite> employeeInvite = empInviteRepo.findById(id);
 		
 		if(employeeInvite.isEmpty()) {
@@ -555,6 +582,16 @@ public class EmployeeInviteService {
 		        String fileName = saveFile(file, "onBoardingProfiles");
 		        existing.setImgFile(fileName);
 		    }
+		    
+		    if (aadhar != null && !aadhar.isEmpty()) {
+		        String fileName = saveFile(aadhar, "onBoardingProfiles");
+		        existing.setAadhar_pdf(fileName);
+		    }
+		    
+		    if (pan_card!= null && !pan_card.isEmpty()) {
+		        String fileName = saveFile(pan_card, "onBoardingProfiles");
+		        existing.setPan_pdf(fileName);
+		    }
 
 		    if (resume != null && !resume.isEmpty()) {
 		        String fileName = saveFile(resume, "onBoardingProfilesPdf");
@@ -575,6 +612,181 @@ public class EmployeeInviteService {
 		        String fileName = saveFile(education, "onBoardingProfilesPdf");
 		        existing.getEducation().setEducation_pdf(fileName);
 		    }
+		    
+		    // =====================================================
+		    // HIGHER EDUCATION
+		    // =====================================================
+
+		    if (higherEducation != null
+		            && !higherEducation.isEmpty()) {
+
+		        if (existing.getEducation()
+		                .getHigherEducation() == null) {
+
+		            existing.getEducation()
+		                    .setHigherEducation(
+		                            new ArrayList<>());
+		        }
+
+		        List<HigherEducation> higherEduList =
+		                existing.getEducation()
+		                        .getHigherEducation();
+
+		        for (int i = 0;
+		             i < higherEducation.size();
+		             i++) {
+
+		            MultipartFile eduFile =
+		                    higherEducation.get(i);
+
+		            HigherEducation hr;
+
+		            if (higherEduList.size() > i) {
+
+		                hr = higherEduList.get(i);
+
+		            } else {
+
+		                hr = new HigherEducation();
+
+		                hr.setEducation(existing.getEducation());
+
+		                higherEduList.add(hr);
+		            }
+
+		            // Higher education pdf
+
+		            if (eduFile != null
+		                    && !eduFile.isEmpty()) {
+
+		                String fileName =
+		                        saveFile(
+		                                eduFile,
+		                                "onBoardingProfilesPdf"
+		                        );
+
+		                hr.setHigherEducation_pdf(fileName);
+		            }
+
+		            // Higher certification pdf
+
+		            if (higherCertification != null
+		                    && higherCertification.size() > i) {
+
+		                MultipartFile certFile =
+		                        higherCertification.get(i);
+
+		                if (certFile != null
+		                        && !certFile.isEmpty()) {
+
+		                    String certFileName =
+		                            saveFile(
+		                                    certFile,
+		                                    "onBoardingProfilesPdf"
+		                            );
+
+		                    hr.setCertification(certFileName);
+		                }
+		            }
+		        }
+		    }
+		    
+		    if (bankStatement != null
+		            && !bankStatement.isEmpty()) {
+
+		        for (int i = 0;
+		             i < bankStatement.size();
+		             i++) {
+
+		            MultipartFile bankFile =
+		                    bankStatement.get(i);
+
+		            if (bankFile != null
+		                    && !bankFile.isEmpty()) {
+
+		                String fileName =
+		                        saveFile(
+		                                bankFile,
+		                                "onBoardingProfilesPdf"
+		                        );
+
+		                if (existing.getExperience().size() > i) {
+
+		                    existing.getExperience()
+		                            .get(i)
+		                            .setBankStatement_pdf(fileName);;
+		                }
+		            }
+		        }
+		    }
+		    
+		 // =====================================================
+		    // PREVIOUS EXPERIENCE LETTER
+		    // =====================================================
+
+		    if (prevExpLetter != null
+		            && !prevExpLetter.isEmpty()) {
+
+		        for (int i = 0;
+		             i < prevExpLetter.size();
+		             i++) {
+
+		            MultipartFile prevFile =
+		                    prevExpLetter.get(i);
+
+		            if (prevFile != null
+		                    && !prevFile.isEmpty()) {
+
+		                String fileName =
+		                        saveFile(
+		                                prevFile,
+		                                "onBoardingProfilesPdf"
+		                        );
+
+		                if (existing.getExperience().size() > i) {
+
+		                    existing.getExperience()
+		                            .get(i)
+		                            .setExp_letter(fileName);;
+		                }
+		            }
+		        }
+		    }
+		    
+		 // =====================================================
+		    // SALARY SLIP
+		    // =====================================================
+
+		    if (salarySlip != null
+		            && !salarySlip.isEmpty()) {
+
+		        for (int i = 0;
+		             i < salarySlip.size();
+		             i++) {
+
+		            MultipartFile salaryFile =
+		                    salarySlip.get(i);
+
+		            if (salaryFile != null
+		                    && !salaryFile.isEmpty()) {
+
+		                String fileName =
+		                        saveFile(
+		                                salaryFile,
+		                                "onBoardingProfilesPdf"
+		                        );
+
+		                if (existing.getExperience().size() > i) {
+
+		                    existing.getExperience()
+		                            .get(i)
+		                            .setSalarySlip_pdf(fileName);;
+		                }
+		            }
+		        }
+		    }
+
+
 
 		    if (experienceLetter != null && !experienceLetter.isEmpty()) {
 		        for (int i = 0; i < experienceLetter.size(); i++) {
