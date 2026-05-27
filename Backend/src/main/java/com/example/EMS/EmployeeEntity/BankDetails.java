@@ -1,13 +1,20 @@
 package com.example.EMS.EmployeeEntity;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 @Entity
@@ -28,6 +35,11 @@ public class BankDetails {
 	@JoinColumn(name="employee_id")
 	@JsonIgnore 
 	private Employee employee;
+	
+	@OneToOne
+    @JoinColumn(name = "id")
+	@JsonBackReference
+    private EmployeeInvite employeeInvite;
 	
 	
 	public Long getId() {
@@ -85,6 +97,14 @@ public class BankDetails {
 	public void setIfsc_Number(String ifsc_Number) {
 		this.ifsc_Number = ifsc_Number;
 	}
+	public EmployeeInvite getEmployeeInvite() {
+		return employeeInvite;
+	}
+	public void setEmployeeInvite(EmployeeInvite employeeInvite) {
+		this.employeeInvite = employeeInvite;
+	}
+	
+	
 	
 	
 	

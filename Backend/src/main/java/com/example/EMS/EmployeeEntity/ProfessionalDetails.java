@@ -35,6 +35,11 @@ public class ProfessionalDetails {
 	@JsonIgnore 
 	private Employee employee;
 	
+	@OneToOne
+	@JoinColumn(name="id")
+	@JsonIgnore 
+	private EmployeeInvite employeeInvite;
+	
 	
 	
 	public Long getId() {
@@ -122,6 +127,14 @@ public class ProfessionalDetails {
 	public void setExp_level(String exp_level) {
 		this.exp_level = exp_level;
 	}
+	public EmployeeInvite getEmployeeInvite() {
+		return employeeInvite;
+	}
+	public void setEmployeeInvite(EmployeeInvite employeeInvite) {
+		this.employeeInvite = employeeInvite;
+	}
+	
+	
 	
 	
 	

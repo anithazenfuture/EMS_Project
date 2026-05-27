@@ -2,6 +2,7 @@ package com.example.EMS.EmployeeEntity;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.GeneratedValue;
@@ -33,9 +34,14 @@ public class Experience {
 	private String offerLetter_exp;
 	
 	@ManyToOne
-    @JoinColumn(name = "employee_id")
-	@JsonIgnore 
-    private Employee employee;
+	@JoinColumn(name = "employee_id")
+	@JsonBackReference("employee-experience")
+	private Employee employee;
+	
+	@ManyToOne
+    @JoinColumn(name = "id")
+	@JsonBackReference
+    private EmployeeInvite employeeInvite;
 	
 	
 	
@@ -132,6 +138,14 @@ public class Experience {
 	public void setOfferLetter_exp(String offerLetter_exp) {
 		this.offerLetter_exp = offerLetter_exp;
 	}
+	public EmployeeInvite getEmployeeInvite() {
+		return employeeInvite;
+	}
+	public void setEmployeeInvite(EmployeeInvite employeeInvite) {
+		this.employeeInvite = employeeInvite;
+	}
+	
+	
 	
 	
 	

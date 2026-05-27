@@ -3,6 +3,7 @@ package com.example.EMS.EmployeeEntity;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -44,6 +45,7 @@ public class EmployeeInvite {
     
     
 	@OneToOne(cascade= CascadeType.ALL)
+	@JsonManagedReference
     private BankDetails bankDetails;
 	
 	@OneToOne(cascade= CascadeType.ALL)
@@ -60,6 +62,7 @@ public class EmployeeInvite {
 	private ProfessionalDetails professional_details;
 	
 	@OneToMany(cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private List<Experience> experience;
 	
 	

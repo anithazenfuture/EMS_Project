@@ -63,21 +63,32 @@ public class Employee {
 	@OneToOne(mappedBy="employee", cascade= CascadeType.ALL, orphanRemoval = true)
 	private ProfessionalDetails professional_details;
 	
-	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL ,orphanRemoval = true)
-	private List<Experience> experience;
-	
-	
-	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<Attendance> attendance;
-	
-	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<LeaveRequest> leaveRequest;
-	
-	@OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonManagedReference
-	private List<LeaveBalance> leaveBalance;
+	@OneToMany(mappedBy = "employee",
+			cascade = CascadeType.ALL,
+			orphanRemoval = true)
+			@JsonManagedReference("employee-experience")
+			private List<Experience> experience;
+
+
+			@OneToMany(mappedBy = "employee",
+			cascade = CascadeType.ALL,
+			orphanRemoval = true)
+			@JsonManagedReference("employee-attendance")
+			private List<Attendance> attendance;
+
+
+			@OneToMany(mappedBy = "employee",
+			cascade = CascadeType.ALL,
+			orphanRemoval = true)
+			@JsonManagedReference("employee-leaveRequest")
+			private List<LeaveRequest> leaveRequest;
+
+
+			@OneToMany(mappedBy = "employee",
+			cascade = CascadeType.ALL,
+			orphanRemoval = true)
+			@JsonManagedReference("employee-leaveBalance")
+			private List<LeaveBalance> leaveBalance;
 	
 	
 	

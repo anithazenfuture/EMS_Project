@@ -39,6 +39,11 @@ public class Education {
 	@JsonIgnore 
 	private Employee employee;
 	
+	@OneToOne
+	@JoinColumn(name="id")
+	@JsonIgnore 
+	private EmployeeInvite employeeInvite;
+	
 
 	
 	public Long getEducationId() {
@@ -116,6 +121,12 @@ public class Education {
 	}
 	public void setEducation_pdf(String education_pdf) {
 		this.education_pdf = education_pdf;
+	}
+	public EmployeeInvite getEmployeeInvite() {
+		return employeeInvite;
+	}
+	public void setEmployeeInvite(EmployeeInvite employeeInvite) {
+		this.employeeInvite = employeeInvite;
 	}
 	
 	
