@@ -53,11 +53,10 @@ public class EmpController {
 			@RequestPart(value="resume",required=false) MultipartFile resume,
 			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
 			@RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
-			@RequestPart(value="higherCertification", required=false) List<MultipartFile> higherCertification,
 			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter){
 		
 		
-		return empService.createEmpIMG(emp, file,aadhar,pan_card, higherEducation,bankStatement, salarySlip, passbook, education, resume, offerLetter, prevExpLetter, higherCertification, experienceLetter);
+		return empService.createEmpIMG(emp, file,aadhar,pan_card, higherEducation,bankStatement, salarySlip, passbook, education, resume, offerLetter, prevExpLetter, experienceLetter);
 	}
 	
 	
@@ -95,7 +94,6 @@ public class EmpController {
 	        @RequestPart(value = "pan_card", required = false) MultipartFile pan_card,
 	        @RequestPart(value = "higherEducation", required = false) List<MultipartFile> higherEducation,
 	        @RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
-	        @RequestPart(value="higherCertification", required=false) List<MultipartFile> higherCertification,
 	        @RequestPart(value = "bankStatement", required = false)
 	        List<MultipartFile> bankStatement,
 	        
@@ -120,7 +118,7 @@ public class EmpController {
 	) throws Exception {
 
 	    return empService.updateEmployeeAll(
-	            empId,emp,file,aadhar,pan_card,higherEducation,bankStatement,salarySlip,prevExpLetter, higherCertification, passbook,education,resume,offerLetter,experienceLetter
+	            empId,emp,file,aadhar,pan_card,higherEducation,bankStatement,salarySlip,prevExpLetter, passbook,education,resume,offerLetter,experienceLetter
 	    );
 	}
 	

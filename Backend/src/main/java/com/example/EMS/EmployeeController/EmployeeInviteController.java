@@ -43,10 +43,9 @@ public class EmployeeInviteController {
 			@RequestPart(value="resume",required=false) MultipartFile resume,
 			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
 			@RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
-			@RequestPart(value="higherCertification", required=false) List<MultipartFile> higherCertification,
 			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter){
 		
-		return empInviteService.saveEmployee(empInvite, file,aadhar,pan_card, higherEducation,bankStatement, salarySlip, passbook, education, resume, offerLetter, prevExpLetter,higherCertification, experienceLetter);
+		return empInviteService.saveEmployee(empInvite, file,aadhar,pan_card, higherEducation,bankStatement, salarySlip, passbook, education, resume, offerLetter, prevExpLetter, experienceLetter);
 	}
 	
 	@GetMapping("/getAllform")
@@ -91,9 +90,8 @@ public class EmployeeInviteController {
 			@RequestPart(value="resume",required=false) MultipartFile resume,
 			@RequestPart(value="offerLetter",required=false) MultipartFile offerLetter,
 			@RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
-			@RequestPart(value="higherCertification", required=false) List<MultipartFile> higherCertification,
 			@RequestPart(value="experienceLetter",required=false) List<MultipartFile> experienceLetter) throws Exception{
-		return empInviteService.updateFormById(id, empInvite, file, aadhar, pan_card, higherEducation,bankStatement,salarySlip, passbook, education, resume, offerLetter,prevExpLetter,higherCertification, experienceLetter);
+		return empInviteService.updateFormById(id, empInvite, file, aadhar, pan_card, higherEducation,bankStatement,salarySlip, passbook, education, resume, offerLetter,prevExpLetter, experienceLetter);
 	}
 	
 	

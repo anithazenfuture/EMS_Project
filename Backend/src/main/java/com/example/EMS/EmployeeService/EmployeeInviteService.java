@@ -88,8 +88,7 @@ public class EmployeeInviteService {
 	        @RequestPart(value = "prevExpLetter", required = false)
 	        List<MultipartFile> prevExpLetter,
 	        
-	        @RequestPart(value="higherCertification", required=false) 
-	        List<MultipartFile> higherCertification,
+	       
 	        
 	        @RequestPart(value = "experienceLetter", required = false)
 	        List<MultipartFile> experienceLetter) {
@@ -379,10 +378,7 @@ public class EmployeeInviteService {
 
 	                    higherEduList.add(hr);
 	                }
-	                if(higherCertification.size() > i) {
-						String fileName1 = saveFile(higherCertification.get(i), "uploadsPdf");
-						hr.setCertification(fileName1);
-					}
+	              
 
 	                hr.setHigherEducation_pdf(fileName);
 
@@ -455,7 +451,6 @@ public class EmployeeInviteService {
 	        MultipartFile offerLetter,
 
 	        List<MultipartFile> prevExpLetter,
-	        List<MultipartFile> higherCertification,
 	        List<MultipartFile> experienceLetter
 	) throws Exception{
 		Optional<EmployeeInvite> employeeInvite = empInviteRepo.findById(id);
@@ -668,26 +663,8 @@ public class EmployeeInviteService {
 		                hr.setHigherEducation_pdf(fileName);
 		            }
 
-		            // Higher certification pdf
-
-		            if (higherCertification != null
-		                    && higherCertification.size() > i) {
-
-		                MultipartFile certFile =
-		                        higherCertification.get(i);
-
-		                if (certFile != null
-		                        && !certFile.isEmpty()) {
-
-		                    String certFileName =
-		                            saveFile(
-		                                    certFile,
-		                                    "onBoardingProfilesPdf"
-		                            );
-
-		                    hr.setCertification(certFileName);
-		                }
-		            }
+		          
+		           
 		        }
 		    }
 		    
@@ -698,8 +675,7 @@ public class EmployeeInviteService {
 		             i < bankStatement.size();
 		             i++) {
 
-		            MultipartFile bankFile =
-		                    bankStatement.get(i);
+		            MultipartFile bankFile = bankStatement.get(i);
 
 		            if (bankFile != null
 		                    && !bankFile.isEmpty()) {

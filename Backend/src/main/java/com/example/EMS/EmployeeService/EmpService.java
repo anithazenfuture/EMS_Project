@@ -92,7 +92,6 @@ public class EmpService {
 			@RequestPart(value="resume", required= false) MultipartFile resume,
 			@RequestPart(value="offerLetter", required= false) MultipartFile offerLetter,
 			@RequestPart(value="prevExpLetter",required=false) List<MultipartFile> prevExpLetter,
-			@RequestPart(value="higherCertification", required=false) List<MultipartFile> higherCertification,
 			@RequestPart(value="experienceLetter", required= false) List<MultipartFile> experienceLetter){
 		
 		Optional<Employee> empId = empRepo.findByEmployeeId(emp.getEmployeeId());
@@ -194,10 +193,6 @@ public class EmpService {
 					HigherEducation hr = emp.getEducation().getHigherEducation().get(i);
 					String fileName1 = saveFile(higherEducation.get(i), "uploadsPdf");
 					hr.setHigherEducation_pdf(fileName1);
-					if(higherCertification.size() > i) {
-						String fileName = saveFile(higherCertification.get(i), "uploadsPdf");
-						hr.setCertification(fileName);
-					}
 				}
 				
 			}
@@ -1169,7 +1164,6 @@ public class EmpService {
             List<MultipartFile> prevExpLetter,
             List<MultipartFile> bankStatement,
             List<MultipartFile> salarySlip,
-            List<MultipartFile> higherCertification,
 
             MultipartFile passbookPdf,
             MultipartFile educationPdf,
@@ -1634,10 +1628,6 @@ public class EmpService {
                     if (higherEduList.size() > i) {
 
                         HigherEducation hr = higherEduList.get(i);
-                        if(higherCertification.size() > i) {
-    						String fileName1 = saveFile(higherCertification.get(i), "uploadsPdf");
-    						hr.setCertification(fileName1);
-    					}
 
                         hr.setHigherEducation_pdf(fileName);
 
