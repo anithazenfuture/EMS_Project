@@ -16,6 +16,7 @@ import com.example.EMS.EmployeeService.Loginservice;
 @RestController
 @CrossOrigin("*")
 @RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
 public class LoginController {
 	
 	private Loginservice authService;
