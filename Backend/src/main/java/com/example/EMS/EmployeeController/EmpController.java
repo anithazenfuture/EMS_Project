@@ -118,8 +118,22 @@ public class EmpController {
 	) throws Exception {
 
 	    return empService.updateEmployeeAll(
-	            empId,emp,file,aadhar,pan_card,higherEducation,bankStatement,salarySlip,prevExpLetter, passbook,education,resume,offerLetter,experienceLetter
+	            empId,
+	            emp,
+	            file,
+	            aadhar,
+	            pan_card,
+	            higherEducation,
+	            prevExpLetter,
+	            bankStatement,
+	            salarySlip,
+	            passbook,
+	            education,
+	            resume,
+	            offerLetter,
+	            experienceLetter
 	    );
+	
 	}
 	
 	@PostMapping(value = "/uploadExcel", consumes = "multipart/form-data")
